@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.estado_actividad import EstadoActividad
 
 class EstadoActividadRepository:
     def __init__(self):
