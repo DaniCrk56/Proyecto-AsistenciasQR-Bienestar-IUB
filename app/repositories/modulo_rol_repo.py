@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.modulo_rol import ModuloRol
 
 class ModuloRolRepository:
     def __init__(self):
