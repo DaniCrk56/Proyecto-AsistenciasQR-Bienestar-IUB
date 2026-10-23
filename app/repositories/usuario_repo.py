@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.usuario import Usuario
 
 class UsuarioRepository:
     def __init__(self):
