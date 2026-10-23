@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.inscripcion import Inscripcion
 
 class InscripcionRepository:
     def __init__(self):
