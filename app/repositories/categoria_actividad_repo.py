@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.categoria_actividad import CategoriaActividad
 
 class CategoriaActividadRepository:
     def __init__(self):
