@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.programa import Programa
 
 class ProgramaRepository:
     def __init__(self):
