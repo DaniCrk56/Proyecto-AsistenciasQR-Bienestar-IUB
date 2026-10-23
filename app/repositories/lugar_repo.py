@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.lugar import Lugar
 
 class LugarRepository:
     def __init__(self):
