@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.tipo_documento import TipoDocumento
 
 class TipoDocumentoRepository:
     def __init__(self):
