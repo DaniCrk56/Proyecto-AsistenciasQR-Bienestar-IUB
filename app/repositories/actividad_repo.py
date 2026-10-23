@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.actividad import Actividad
 
 class ActividadRepository:
     def __init__(self):
