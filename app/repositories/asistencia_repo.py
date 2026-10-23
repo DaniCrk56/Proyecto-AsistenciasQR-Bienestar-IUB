@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.asistencia import Asistencia
 
 class AsistenciaRepository:
     def __init__(self):
