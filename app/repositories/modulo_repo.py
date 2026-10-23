@@ -1,4 +1,5 @@
 from app.core.database import Database
+from app.models.modulo import Modulo
 
 class ModuloRepository:
     def __init__(self):
