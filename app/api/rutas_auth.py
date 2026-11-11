@@ -1,74 +1,148 @@
 from datetime import datetime, timedelta
 from typing import Optional
+
+import bcrypt
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from app.repositories.usuario_repo import UsuarioRepository
+
 
 SECRET_KEY = "1234"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 router = APIRouter(prefix="/auth", tags=["Autenticación y JWT"])
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+
+class DatosLogin(BaseModel):
+    correo_institucional: str
+    password: str
+
 
 def crear_token_acceso(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
+
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
 
-@router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    to_encode.update({"exp": expire})
+
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+@router.post("/login")
+def login(datos: DatosLogin):
     repo = UsuarioRepository()
-    
-    usuarios = repo.obtener_todos()
-    usuario_encontrado = None
-    
-    for u in usuarios:
-        if u.get("email") == form_data.username or u.get("username") == form_data.username:
-            usuario_encontrado = u
-            break
-            
-    if not usuario_encontrado:
+
+    usuario = repo.obtener_por_correo(datos.correo_institucional)
+
+    if not usuario:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales incorrectas: usuario no encontrado",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="Correo o contraseña incorrectos"
         )
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    token_jwt = crear_token_acceso(
-        data={"sub": form_data.username, "usuario_id": usuario_encontrado.get("id")},
-        expires_delta=access_token_expires
+    password_guardado = usuario.get("password_hash")
+
+    if not password_guardado:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Correo o contraseña incorrectos"
+        )
+
+    password_bytes = datos.password.encode("utf-8")
+    hash_bytes = password_guardado.encode("utf-8")
+
+    # Si ya tiene un hash bcrypt, verificamos con bcrypt.
+    if password_guardado.startswith(("$2a$", "$2b$", "$2y$")):
+        try:
+            password_correcto = bcrypt.checkpw(password_bytes, hash_bytes)
+        except ValueError:
+            password_correcto = False
+
+    # Si todavía tiene texto normal, comprobamos y migramos a bcrypt.
+    else:
+        password_correcto = datos.password == password_guardado
+
+        if password_correcto:
+            nuevo_hash = bcrypt.hashpw(
+                password_bytes,
+                bcrypt.gensalt()
+            ).decode("utf-8")
+
+            actualizado = repo.actualizar_password_hash(
+                usuario["id"],
+                nuevo_hash
+            )
+
+            if not actualizado:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="No se pudo actualizar la contraseña"
+                )
+
+    if not password_correcto:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Correo o contraseña incorrectos"
+        )
+
+    tiempo_expiracion = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    token = crear_token_acceso(
+        data={
+            "sub": usuario["correo_institucional"],
+            "usuario_id": usuario["id"],
+            "id_rol": usuario["id_rol"]
+        },
+        expires_delta=tiempo_expiracion
     )
 
-    return {"access_token": token_jwt, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "usuario": {
+            "id": usuario["id"],
+            "nombres": usuario["nombres"],
+            "apellidos": usuario["apellidos"],
+            "correo_institucional": usuario["correo_institucional"],
+            "id_rol": usuario["id_rol"]
+        }
+    }
+
 
 def validar_token(token: str = Depends(oauth2_scheme)):
     exception_auth = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Token inválido o expirado",
-        headers={"WWW-Authenticate": "Bearer"},
+        headers={"WWW-Authenticate": "Bearer"}
     )
+
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+
+        username = payload.get("sub")
+
         if username is None:
             raise exception_auth
+
     except JWTError:
         raise exception_auth
+
     return username
+
 
 @router.get("/perfil")
 def ver_perfil_protegido(usuario_actual: str = Depends(validar_token)):
