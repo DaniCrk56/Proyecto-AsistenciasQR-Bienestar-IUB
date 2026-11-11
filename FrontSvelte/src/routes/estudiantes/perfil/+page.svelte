@@ -1076,4 +1076,29 @@
     }
 }
 
+/* SUBRAYADO ANIMADO DEL MENÚ */
+
+.enlace {
+    position: relative;
+    padding-bottom: 7px;
+}
+
+.enlace::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: #f5ca24;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+}
+
+.enlace:hover::after,
+.enlace.activo::after {
+    transform: scaleX(1);
+}
+
 </style>
