@@ -24,36 +24,40 @@ class UsuarioRepository:
         return filas
 
   
-def obtener_por_correo(self, correo):
-    conn = self.db.get_connection()
-    if not conn:
-        return None
 
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT
-            u.id,
-            u.nombres,
-            u.apellidos,
-            u.numero_documento,
-            u.correo_institucional,
-            u.password_hash,
-            u.id_rol,
-            u.estado,
-            td.nombre AS tipo_documento,
-            p.nombre AS programa
-        FROM usuario u
-        LEFT JOIN tipo_documento td
-            ON u.id_tipo_documento = td.id
-        LEFT JOIN programa p
-            ON u.id_programa = p.id
-        WHERE u.correo_institucional = %s
-        AND u.estado = TRUE;
-    """, (correo,))
+    def obtener_por_correo(self, correo):
+        conn = self.db.get_connection()
+        if not conn:
+            return None
 
-    usuario = cursor.fetchone()
-    conn.close()
-    return usuario
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT
+                u.id,
+                u.nombres,
+                u.apellidos,
+                u.numero_documento,
+                u.correo_institucional,
+                u.password_hash,
+                u.id_rol,
+                u.estado,
+                td.nombre AS tipo_documento,
+                p.nombre AS programa
+            FROM usuario u
+            LEFT JOIN tipo_documento td
+                ON u.id_tipo_documento = td.id
+            LEFT JOIN programa p
+                ON u.id_programa = p.id
+            WHERE u.correo_institucional = %s
+            AND u.estado = TRUE;
+        """, (correo,))
+
+        usuario = cursor.fetchone()
+        conn.close()
+        return usuario
+
+
+    
 
     def actualizar_password_hash(self, usuario_id, nuevo_hash):
         conn = self.db.get_connection()
