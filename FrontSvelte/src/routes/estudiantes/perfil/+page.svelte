@@ -5,6 +5,7 @@
     let estudiante = {
         nombre: 'Cargando...',
         documento: 'No registrado',
+        tipoDocumento: 'No registrado',
         correo: 'No registrado',
         programa: 'No registrado',
         codigo: 'No registrado'
@@ -16,15 +17,21 @@
         const usuarioGuardado = localStorage.getItem('usuario');
 
         if (usuarioGuardado) {
-            const usuario = JSON.parse(usuarioGuardado);
+            try {
+                const usuario = JSON.parse(usuarioGuardado);
 
-            estudiante = {
-                nombre: `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim() || 'Nombre no disponible',
-                documento: usuario.documento || 'No registrado',
-                correo: usuario.correo_institucional || 'No registrado',
-                programa: usuario.programa || 'No registrado',
-                codigo: usuario.codigo_estudiantil || 'No registrado'
-            };
+                estudiante = {
+                    nombre: `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim() || 'Nombre no disponible',
+                    documento: usuario.numero_documento || 'No registrado',
+                    tipoDocumento: usuario.tipo_documento || 'No registrado',
+                    correo: usuario.correo_institucional || 'No registrado',
+                    programa: usuario.programa || 'No registrado',
+                    codigo: 'No registrado'
+                };
+            } catch (error) {
+                estudiante.nombre = 'Error al cargar los datos';
+                console.error('Error leyendo el usuario:', error);
+            }
         } else {
             estudiante.nombre = 'No se encontró el usuario';
         }
@@ -147,8 +154,8 @@
                         <div class="dato">
                             <div class="dato-icono">▤</div>
                             <div>
-                                <small>Documento</small>
-                                <strong>{estudiante.documento}</strong>
+                               <small>{estudiante.tipoDocumento}</small>
+           <strong>{estudiante.documento}</strong>
                             </div>
                         </div>
 
