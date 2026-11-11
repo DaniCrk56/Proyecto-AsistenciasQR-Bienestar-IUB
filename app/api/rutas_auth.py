@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
-from passlib.context import CryptContext
 
 from app.repositories.usuario_repo import UsuarioRepository
 
@@ -18,8 +17,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 router = APIRouter(prefix="/auth", tags=["Autenticación y JWT"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class DatosLogin(BaseModel):
@@ -84,15 +81,13 @@ def registrar_estudiante(datos: DatosRegistro):
     if existentes["documento_existe"]:
         raise HTTPException(status_code=400, detail="Este documento ya está registrado")
 
-    password_hash = pwd_context.hash(datos.password)
-
     nuevo_id = repo.crear(
         datos.nombres.strip(),
         datos.apellidos.strip(),
         datos.id_tipo_documento,
         datos.numero_documento.strip(),
         datos.correo_institucional.strip(),
-        password_hash,
+        datos.password,
         datos.id_programa,
         3
     )
@@ -117,21 +112,7 @@ def login(datos: DatosLogin):
 
     password_guardado = usuario.get("password_hash")
 
-    if not password_guardado:
-        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
-
-    # Compatibilidad con cuentas antiguas en texto plano
-    if password_guardado.startswith("$2"):
-        password_correcta = pwd_context.verify(datos.password, password_guardado)
-    else:
-        password_correcta = datos.password == password_guardado
-
-        # Si la contraseña antigua es correcta, la protegemos
-        if password_correcta:
-            nuevo_hash = pwd_context.hash(datos.password)
-            repo.actualizar_password_hash(usuario["id"], nuevo_hash)
-
-    if not password_correcta:
+    if not password_guardado or datos.password != password_guardado:
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
     token = crear_token_acceso(
