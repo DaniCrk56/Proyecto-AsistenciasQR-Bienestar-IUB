@@ -89,7 +89,7 @@
             </a>
 
             <a
-                href="/estudiantes/Perfil"
+                href="/estudiantes/perfil"
                 class="activo"
                 onclick={() => menuAbierto = false}
             >
