@@ -15,11 +15,17 @@
     let menuAbierto = false;
 
    let actividades = [];
+function cerrarSesion() {
+    localStorage.removeItem('usuario');
+    window.location.href = '/';
+}
 
     function inscribirse() {
         mensaje = 'La inscripción estará disponible cuando conectemos esta página con el sistema.';
     }
-
+if (actividades.length === 0) {
+    return;
+}
     onMount(() => {
         swiper = new Swiper('.eventos-swiper', {
             modules: [EffectCoverflow, Navigation, Pagination],
