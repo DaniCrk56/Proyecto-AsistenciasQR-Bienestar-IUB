@@ -1,0 +1,803 @@
+
+<script>
+    let seccionActual = 'inicio';
+
+    let eventos = [
+        {
+            id: 1,
+            nombre: 'Jornada deportiva',
+            categoria: 'Deportes',
+            fecha: '20 de noviembre de 2026',
+            hora: '8:00 a. m. - 10:00 a. m.',
+            lugar: 'Cancha universitaria',
+            estado: 'Activo'
+        },
+        {
+            id: 2,
+            nombre: 'Festival cultural',
+            categoria: 'Cultura',
+            fecha: '25 de noviembre de 2026',
+            hora: '2:00 p. m. - 5:00 p. m.',
+            lugar: 'Auditorio principal',
+            estado: 'Activo'
+        },
+        {
+            id: 3,
+            nombre: 'Encuentro de bienestar',
+            categoria: 'Bienestar',
+            fecha: '28 de noviembre de 2026',
+            hora: '9:00 a. m. - 12:00 p. m.',
+            lugar: 'Bloque administrativo',
+            estado: 'Activo'
+        }
+    ];
+
+    let opciones = [
+        { id: 'inicio', nombre: 'Panel principal', icono: '⌂' },
+        { id: 'crear', nombre: 'Crear evento', icono: '＋' },
+        { id: 'eventos', nombre: 'Gestionar eventos', icono: '▦' },
+        { id: 'scanner', nombre: 'Escanear QR', icono: '▣' },
+        { id: 'asistencia', nombre: 'Asistencias', icono: '☷' },
+        { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
+    ];
+
+    function cambiarSeccion(seccion) {
+        seccionActual = seccion;
+    }
+
+   function abrirScanner(evento) {
+    window.location.href = '/admin/scanner?id_evento=' + evento.id;
+}
+</script>
+
+<svelte:head>
+    <title>Panel administrativo | Bienestar Universitario</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900;1000&display=swap" rel="stylesheet">
+</svelte:head>
+
+<div class="panel">
+
+    <aside class="barra-lateral">
+        <div class="marca">
+            <img src="/LogoIUB.png" alt="Logo IUB">
+            <div>
+                <h2>BIENESTAR</h2>
+                <span>UNIVERSITARIO</span>
+            </div>
+        </div>
+
+        <div class="separador"></div>
+
+        <p class="titulo-menu">MENÚ PRINCIPAL</p>
+
+        <nav>
+            {#each opciones as opcion}
+                <button
+                    class:activo={seccionActual === opcion.id}
+                    onclick={() => cambiarSeccion(opcion.id)}
+                >
+                    <span class="icono">{opcion.icono}</span>
+                    {opcion.nombre}
+                </button>
+            {/each}
+        </nav>
+
+        <div class="parte-inferior">
+            <div class="separador"></div>
+
+            <button class="cerrar">
+                <span class="icono">↪</span>
+                Cerrar sesión
+            </button>
+
+            <div class="usuario">
+                <div class="avatar">AD</div>
+                <div>
+                    <strong>Administrador</strong>
+                    <span>Panel administrativo</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="contenido">
+
+        <header class="encabezado">
+            <div>
+                <span class="subtitulo">BIENESTAR UNIVERSITARIO</span>
+                <h1>
+                    {#if seccionActual === 'inicio'}
+                        Panel principal
+                    {:else if seccionActual === 'crear'}
+                        Crear evento
+                    {:else if seccionActual === 'eventos'}
+                        Gestionar eventos
+                    {:else if seccionActual === 'scanner'}
+                        Escanear QR
+                    {:else if seccionActual === 'asistencia'}
+                        Asistencias
+                    {:else}
+                        Mi perfil
+                    {/if}
+                </h1>
+            </div>
+
+            <div class="fecha-actual">
+                <span>●</span> Panel de administración
+            </div>
+        </header>
+
+        {#if seccionActual === 'inicio'}
+
+            <section class="bienvenida">
+                <div>
+                    <span>ADMINISTRACIÓN</span>
+                    <h2>¡Bienvenido al panel de gestión!</h2>
+                    <p>Administra los eventos universitarios y supervisa la asistencia de los estudiantes desde un solo lugar.</p>
+                </div>
+                <div class="bienvenida-icono">✦</div>
+            </section>
+
+            <section class="estadisticas">
+                <article class="estadistica">
+                    <div class="estadistica-icono azul">▦</div>
+                    <span>Total de eventos</span>
+                    <h2>12</h2>
+                    <small>Eventos registrados</small>
+                </article>
+
+                <article class="estadistica">
+                    <div class="estadistica-icono verde">✓</div>
+                    <span>Eventos activos</span>
+                    <h2>8</h2>
+                    <small>Disponibles actualmente</small>
+                </article>
+
+                <article class="estadistica">
+                    <div class="estadistica-icono amarillo">♙</div>
+                    <span>Estudiantes inscritos</span>
+                    <h2>250</h2>
+                    <small>Inscripciones registradas</small>
+                </article>
+
+                <article class="estadistica">
+                    <div class="estadistica-icono morado">▣</div>
+                    <span>Asistencias</span>
+                    <h2>184</h2>
+                    <small>Asistencias registradas</small>
+                </article>
+            </section>
+
+            <section class="seccion">
+                <div class="encabezado-seccion">
+                    <div>
+                        <h2>Accesos rápidos</h2>
+                        <p>Selecciona una función para comenzar.</p>
+                    </div>
+                </div>
+
+                <div class="accesos">
+                    <button onclick={() => cambiarSeccion('crear')}>
+                        <span class="acceso-icono">＋</span>
+                        <strong>Crear evento</strong>
+                        <small>Registrar una nueva actividad</small>
+                        <span class="flecha">→</span>
+                    </button>
+
+                    <button onclick={() => cambiarSeccion('scanner')}>
+                        <span class="acceso-icono">▣</span>
+                        <strong>Escanear QR</strong>
+                        <small>Validar asistencia de estudiantes</small>
+                        <span class="flecha">→</span>
+                    </button>
+
+                    <button onclick={() => cambiarSeccion('asistencia')}>
+                        <span class="acceso-icono">☷</span>
+                        <strong>Consultar asistencias</strong>
+                        <small>Revisar registros de asistencia</small>
+                        <span class="flecha">→</span>
+                    </button>
+                </div>
+            </section>
+
+        {:else if seccionActual === 'scanner'}
+
+            <section class="introduccion">
+                <h2>Selecciona un evento para escanear</h2>
+                <p>Busca la actividad correspondiente y abre su lector de códigos QR.</p>
+            </section>
+
+            <div class="tarjetas-eventos">
+                {#each eventos as evento}
+                    <article class="tarjeta-evento">
+                        <div class="imagen-evento">
+                            <span>EVENTO UNIVERSITARIO</span>
+                            <div class="imagen-decoracion">✦</div>
+                        </div>
+
+                        <div class="informacion-evento">
+                            <span class="categoria">{evento.categoria}</span>
+                            <h3>{evento.nombre}</h3>
+
+                            <p>◷ {evento.fecha}</p>
+                            <p>◴ {evento.hora}</p>
+                            <p>⌖ {evento.lugar}</p>
+
+                            <button class="boton-escanear" onclick={() => abrirScanner(evento)}>
+                                ▣ Escanear QR
+                            </button>
+                        </div>
+                    </article>
+                {/each}
+            </div>
+
+        {:else if seccionActual === 'crear'}
+
+            <section class="seccion-vacia">
+                <div class="vacio-icono">＋</div>
+                <h2>Crear evento</h2>
+                <p>Aquí integraremos el formulario de creación de eventos que ya tienes.</p>
+            </section>
+
+        {:else if seccionActual === 'eventos'}
+
+            <section class="seccion-vacia">
+                <div class="vacio-icono">▦</div>
+                <h2>Gestionar eventos</h2>
+                <p>Aquí podrás consultar, editar y administrar las actividades universitarias.</p>
+            </section>
+
+        {:else if seccionActual === 'asistencia'}
+
+            <section class="seccion-vacia">
+                <div class="vacio-icono">☷</div>
+                <h2>Asistencias</h2>
+                <p>Aquí integraremos tu apartado de consulta de asistencias.</p>
+            </section>
+
+        {:else}
+
+            <section class="seccion-vacia">
+                <div class="vacio-icono">♙</div>
+                <h2>Mi perfil</h2>
+                <p>Información del administrador.</p>
+            </section>
+
+        {/if}
+
+    </main>
+</div>
+
+<style>
+    :global(*) {
+        box-sizing: border-box;
+    }
+
+    :global(body) {
+        margin: 0;
+        font-family: 'Nunito', sans-serif;
+        background: #f3f6fc;
+    }
+
+    .panel {
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+        color: #18233f;
+    }
+
+    .barra-lateral {
+        width: 270px;
+        min-width: 270px;
+        background: #111c3b;
+        color: white;
+        padding: 28px 18px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .marca {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 8px;
+    }
+
+    .marca img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        background: white;
+        border-radius: 12px;
+        padding: 4px;
+    }
+
+    .marca h2 {
+        font-size: 15px;
+        font-weight: 1000;
+        margin: 0;
+    }
+
+    .marca span {
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: #aab8d0;
+        font-weight: 800;
+    }
+
+    .separador {
+        height: 1px;
+        background: #34415f;
+        margin: 28px 0;
+    }
+
+    .titulo-menu {
+        font-size: 10px;
+        color: #8795b2;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        padding-left: 12px;
+        margin-bottom: 15px;
+    }
+
+    nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    nav button,
+    .cerrar {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        width: 100%;
+        border: none;
+        background: transparent;
+        color: #b9c5dc;
+        padding: 14px 13px;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 800;
+        text-align: left;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    nav button:hover,
+    .cerrar:hover {
+        background: #1c2a4e;
+        color: white;
+    }
+
+    nav button.activo {
+        background: #0785b6;
+        color: white;
+        box-shadow: 0 6px 18px #0785b644;
+    }
+
+    .icono {
+        font-size: 21px;
+        width: 24px;
+        text-align: center;
+    }
+
+    .parte-inferior {
+        margin-top: auto;
+    }
+
+    .usuario {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 8px 0;
+    }
+
+    .avatar {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #0785b6;
+        font-weight: 1000;
+    }
+
+    .usuario strong,
+    .usuario span {
+        display: block;
+    }
+
+    .usuario strong {
+        font-size: 13px;
+    }
+
+    .usuario span {
+        font-size: 10px;
+        color: #aab8d0;
+    }
+
+    .contenido {
+        flex: 1;
+        min-width: 0;
+        padding: 35px 45px;
+    }
+
+    .encabezado {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 15px;
+    }
+
+    .subtitulo {
+        color: #0785b6;
+        font-size: 10px;
+        font-weight: 1000;
+        letter-spacing: 2px;
+    }
+
+    .encabezado h1 {
+        margin: 4px 0 0;
+        font-size: 29px;
+        font-weight: 1000;
+    }
+
+    .fecha-actual {
+        background: white;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #596781;
+        box-shadow: 0 4px 15px #15264a0a;
+    }
+
+    .fecha-actual span {
+        color: #18b67b;
+        margin-right: 5px;
+    }
+
+    .bienvenida {
+        background: linear-gradient(115deg, #0785b6, #07517f);
+        padding: 35px;
+        border-radius: 20px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        overflow: hidden;
+        min-height: 190px;
+    }
+
+    .bienvenida span {
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: #c9edff;
+    }
+
+    .bienvenida h2 {
+        font-size: 25px;
+        font-weight: 1000;
+        margin: 8px 0;
+    }
+
+    .bienvenida p {
+        max-width: 560px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: #e4f5ff;
+    }
+
+    .bienvenida-icono {
+        font-size: 90px;
+        opacity: 0.25;
+        margin-right: 25px;
+    }
+
+    .estadisticas {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin: 25px 0 35px;
+    }
+
+    .estadistica {
+        background: white;
+        padding: 22px;
+        border-radius: 17px;
+        box-shadow: 0 5px 20px #15264a08;
+    }
+
+    .estadistica-icono {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 21px;
+        margin-bottom: 15px;
+    }
+
+    .azul { background: #e4f3ff; color: #0785b6; }
+    .verde { background: #e2f8ed; color: #159a65; }
+    .amarillo { background: #fff5d9; color: #d69a00; }
+    .morado { background: #f0eaff; color: #7954cf; }
+
+    .estadistica > span {
+        color: #74809a;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .estadistica h2 {
+        margin: 5px 0;
+        font-size: 29px;
+        font-weight: 1000;
+    }
+
+    .estadistica small {
+        color: #9ba5b8;
+        font-size: 10px;
+    }
+
+    .encabezado-seccion {
+        margin-bottom: 18px;
+    }
+
+    .encabezado-seccion h2,
+    .introduccion h2 {
+        font-size: 20px;
+        font-weight: 1000;
+        margin: 0;
+    }
+
+    .encabezado-seccion p,
+    .introduccion p {
+        color: #8590a6;
+        font-size: 12px;
+    }
+
+    .accesos {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .accesos button {
+        position: relative;
+        background: white;
+        border: 1px solid #e9edf5;
+        border-radius: 17px;
+        padding: 23px;
+        text-align: left;
+        font-family: inherit;
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+    .accesos button:hover {
+        transform: translateY(-4px);
+        border-color: #0785b6;
+        box-shadow: 0 10px 25px #0785b615;
+    }
+
+    .acceso-icono {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #e7f5fc;
+        color: #0785b6;
+        font-size: 25px;
+        margin-bottom: 16px;
+    }
+
+    .accesos strong,
+    .accesos small {
+        display: block;
+    }
+
+    .accesos strong {
+        font-size: 14px;
+        color: #18233f;
+        font-weight: 1000;
+    }
+
+    .accesos small {
+        font-size: 11px;
+        color: #929db1;
+        margin-top: 5px;
+    }
+
+    .flecha {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        color: #0785b6;
+        font-size: 20px;
+    }
+
+    .introduccion {
+        margin-bottom: 25px;
+    }
+
+    .tarjetas-eventos {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .tarjeta-evento {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px #15264a0a;
+        transition: 0.25s;
+    }
+
+    .tarjeta-evento:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px #15264a15;
+    }
+
+    .imagen-evento {
+        height: 135px;
+        background: linear-gradient(120deg, #0785b6, #13244c);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 18px;
+        color: white;
+    }
+
+    .imagen-evento > span {
+        font-size: 9px;
+        letter-spacing: 1px;
+        font-weight: 900;
+    }
+
+    .imagen-decoracion {
+        font-size: 50px;
+        opacity: 0.3;
+    }
+
+    .informacion-evento {
+        padding: 20px;
+    }
+
+    .categoria {
+        color: #0785b6;
+        font-size: 10px;
+        font-weight: 1000;
+        text-transform: uppercase;
+    }
+
+    .informacion-evento h3 {
+        font-size: 17px;
+        font-weight: 1000;
+        margin: 7px 0 15px;
+    }
+
+    .informacion-evento p {
+        color: #77839a;
+        font-size: 11px;
+        margin: 9px 0;
+    }
+
+    .boton-escanear {
+        width: 100%;
+        margin-top: 15px;
+        padding: 13px;
+        border: none;
+        border-radius: 11px;
+        background: #0785b6;
+        color: white;
+        font-family: inherit;
+        font-weight: 1000;
+        font-size: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .boton-escanear:hover {
+        background: #056b91;
+    }
+
+    .seccion-vacia {
+        background: white;
+        padding: 65px 25px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 5px 20px #15264a08;
+    }
+
+    .vacio-icono {
+        margin: 0 auto 15px;
+        display: grid;
+        place-items: center;
+        width: 65px;
+        height: 65px;
+        border-radius: 20px;
+        background: #e7f5fc;
+        color: #0785b6;
+        font-size: 32px;
+    }
+
+    .seccion-vacia h2 {
+        font-weight: 1000;
+    }
+
+    .seccion-vacia p {
+        color: #8995a9;
+        font-size: 13px;
+    }
+
+    @media (max-width: 1100px) {
+        .estadisticas {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tarjetas-eventos {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .contenido {
+            padding: 30px 25px;
+        }
+    }
+
+    @media (max-width: 750px) {
+        .panel {
+            flex-direction: column;
+        }
+
+        .barra-lateral {
+            width: 100%;
+            min-width: 0;
+            padding: 18px;
+        }
+
+        nav {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .parte-inferior {
+            margin-top: 15px;
+        }
+
+        .contenido {
+            padding: 25px 18px;
+        }
+
+        .encabezado {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .estadisticas,
+        .accesos,
+        .tarjetas-eventos {
+            grid-template-columns: 1fr;
+        }
+
+        .bienvenida {
+            padding: 25px;
+        }
+
+        .bienvenida h2 {
+            font-size: 21px;
+        }
+
+        .bienvenida-icono {
+            display: none;
+        }
+    }
+</style>
