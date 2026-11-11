@@ -1,26 +1,63 @@
 
-<script>
-    let seccionActual = 'inicio';
+import { onMount } from 'svelte';
 
+let seccionActual = 'inicio';
 let eventos = [];
 
-    let opciones = [
-        { id: 'inicio', nombre: 'Panel principal', icono: '⌂' },
-        { id: 'crear', nombre: 'Crear evento', icono: '＋' },
-        { id: 'eventos', nombre: 'Gestionar eventos', icono: '▦' },
-        { id: 'scanner', nombre: 'Escanear QR', icono: '▣' },
-        { id: 'asistencia', nombre: 'Asistencias', icono: '☷' },
-        { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
-    ];
+let lugares = [];
+let categorias = [];
+let estados = [];
 
-    function cambiarSeccion(seccion) {
-        seccionActual = seccion;
+let cargandoOpciones = false;
+let mensajeOpciones = '';
+
+const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
+
+let opciones = [
+    { id: 'inicio', nombre: 'Panel principal', icono: '⌂' },
+    { id: 'crear', nombre: 'Crear evento', icono: '＋' },
+    { id: 'eventos', nombre: 'Gestionar eventos', icono: '▦' },
+    { id: 'scanner', nombre: 'Escanear QR', icono: '▣' },
+    { id: 'asistencia', nombre: 'Asistencias', icono: '☷' },
+    { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
+];
+
+function cambiarSeccion(seccion) {
+    seccionActual = seccion;
+
+    if (seccion === 'crear') {
+        cargarOpciones();
+    }
+}
+
+async function cargarOpciones() {
+    cargandoOpciones = true;
+    mensajeOpciones = '';
+
+    try {
+        const respuestaLugares = await fetch(URL_BASE + '/lugares/');
+        const respuestaCategorias = await fetch(URL_BASE + '/categorias-actividad/');
+        const respuestaEstados = await fetch(URL_BASE + '/estados-actividad/');
+
+        if (!respuestaLugares.ok || !respuestaCategorias.ok || !respuestaEstados.ok) {
+            throw new Error('No se pudieron cargar las opciones.');
+        }
+
+        lugares = await respuestaLugares.json();
+        categorias = await respuestaCategorias.json();
+        estados = await respuestaEstados.json();
+
+    } catch (error) {
+        mensajeOpciones = error.message || 'Error al cargar los datos.';
     }
 
-   function abrirScanner(evento) {
+    cargandoOpciones = false;
+}
+
+function abrirScanner(evento) {
     window.location.href = '/admin/scanner?id_evento=' + evento.id;
 }
-</script>
+
 
 <svelte:head>
     <title>Panel administrativo | Bienestar Universitario</title>
