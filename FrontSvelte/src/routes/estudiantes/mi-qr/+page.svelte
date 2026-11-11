@@ -545,20 +545,23 @@
     /* DISTRIBUCIÓN QR */
 
     .qr-layout {
-        display: grid;
-        grid-template-columns: .9fr 1.1fr;
-        gap: 25px;
-        align-items: stretch;
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
 
     .tarjeta-qr {
-        background: white;
-        border: 1px solid #e9edf4;
-        border-radius: 22px;
-        padding: 28px;
-        box-shadow: 0 10px 30px rgba(20,32,68,.06);
-        text-align: center;
-    }
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid #e9edf4;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(20,32,68,.06);
+    text-align: center;
+}
 
     .qr-cabecera {
         display: flex;
@@ -628,14 +631,21 @@
     }
 
     .qr-demo {
-        width: 230px;
-        height: 230px;
-        padding: 12px;
-        background: white;
-        border: 1px solid #e5eaf2;
-        border-radius: 12px;
-        box-shadow: 0 5px 18px rgba(20,32,68,.06);
-    }
+    width: 230px;
+    height: 230px;
+    padding: 12px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border: 1px solid #e5eaf2;
+    border-radius: 12px;
+    box-shadow: 0 5px 18px rgba(20,32,68,.06);
+    animation: aparecerCodigo .9s ease both;
+    animation-delay: .3s;
+    transition: box-shadow .3s ease;
+}
 
     .qr-patron {
         display: grid;
@@ -1303,6 +1313,7 @@ footer {
     height: 100%;
     object-fit: contain;
     display: block;
+    margin: auto;
 }
 
 .qr-cargando {
