@@ -1370,4 +1370,166 @@
             height: 260px;
         }
     }
+
+
+.encabezado {
+    animation: aparecerArriba .8s ease both;
+}
+
+
+.presentacion-contenido {
+    animation: aparecerAbajo 1s ease both;
+}
+
+
+.circulo-uno {
+    animation: flotar 7s ease-in-out infinite;
+}
+
+.circulo-dos {
+    animation: flotar 5s ease-in-out infinite reverse;
+}
+
+.figura-icono {
+    animation: girarSuave 8s linear infinite;
+}
+
+
+.titulo-seccion {
+    animation: aparecerAbajo .9s ease both;
+}
+
+
+.tarjeta-evento {
+    transition: transform .4s ease, box-shadow .4s ease;
+}
+
+.tarjeta-evento:hover {
+    transform: translateY(-9px);
+    box-shadow: 0 20px 40px rgba(15, 32, 65, .25);
+}
+
+
+.tarjeta-evento img {
+    transition: transform .6s ease;
+}
+
+.tarjeta-evento:hover img {
+    transform: scale(1.09);
+}
+
+
+.detalle-evento {
+    animation: aparecerAbajo 1s ease both;
+    transition: box-shadow .3s ease;
+}
+
+.detalle-evento:hover {
+    box-shadow: 0 18px 45px rgba(20, 32, 68, .12);
+}
+
+
+.detalle-imagen img {
+    transition: transform .6s ease;
+}
+
+.detalle-imagen:hover img {
+    transform: scale(1.06);
+}
+
+/* Botones */
+.boton-inscripcion,
+.boton-descubrir,
+.boton-carrusel {
+    transition: all .3s ease;
+}
+
+.boton-inscripcion:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 9px 20px rgba(0, 174, 240, .25);
+}
+
+
+.enlace {
+    position: relative;
+}
+
+.enlace::after {
+    content: "";
+    position: absolute;
+    bottom: -7px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    border-radius: 5px;
+    background: #f5ca24;
+    transition: width .3s ease;
+}
+
+.enlace:hover::after,
+.enlace.activo::after {
+    width: 100%;
+}
+
+
+.pie-pagina {
+    animation: aparecerAbajo 1s ease both;
+}
+
+
+@keyframes aparecerArriba {
+    from {
+        opacity: 0;
+        transform: translateY(-25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes aparecerAbajo {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes flotar {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-18px);
+    }
+}
+
+@keyframes girarSuave {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}
+
 </style>
