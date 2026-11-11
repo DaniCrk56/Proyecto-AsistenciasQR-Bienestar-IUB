@@ -166,56 +166,6 @@
 
                 </div>
 
-                <div class="informacion">
-
-                    <div class="informacion-cabecera">
-                        <div class="avatar">E</div>
-
-                        <div>
-                            <span>PERFIL ESTUDIANTIL</span>
-                            <h3>Datos del estudiante</h3>
-                        </div>
-                    </div>
-
-                    <div class="campo">
-                        <span>Nombre completo</span>
-                        <strong>{estudiante.nombre}</strong>
-                    </div>
-
-                    <div class="campo">
-                        <span>Documento de identidad</span>
-                        <strong>{estudiante.documento}</strong>
-                    </div>
-
-                    <div class="campo">
-                        <span>Programa académico</span>
-                        <strong>{estudiante.programa}</strong>
-                    </div>
-
-                    <div class="campo">
-                        <span>Código estudiantil</span>
-                        <strong>{estudiante.codigo}</strong>
-                    </div>
-
-                    <div class="aviso">
-                        <div class="aviso-icono">ⓘ</div>
-                        <p>
-                            Tu código QR es personal. No lo compartas con otras
-                            personas, ya que será utilizado para verificar tu
-                            identidad y registrar tu asistencia.
-                        </p>
-                    </div>
-
-                    <button class="boton-descargar" onclick={descargarQR}>
-                        <span>↓</span>
-                        Descargar mi código QR
-                    </button>
-
-                    {#if mensaje}
-                        <div class="mensaje">{mensaje}</div>
-                    {/if}
-
-                </div>
             </div>
 
             <section class="instrucciones">
