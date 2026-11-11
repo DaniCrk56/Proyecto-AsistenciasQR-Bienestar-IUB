@@ -312,13 +312,90 @@ async function crearActividad(evento) {
                 {/each}
             </div>
 
-        {:else if seccionActual === 'crear'}
 
-            <section class="seccion-vacia">
-                <div class="vacio-icono">＋</div>
-                <h2>Crear evento</h2>
-                <p>Aquí integraremos el formulario de creación de eventos que ya tienes.</p>
-            </section>
+{:else if seccionActual === 'crear'}
+
+    <section class="seccion">
+        <div class="encabezado-seccion">
+            <h2>Registrar nueva actividad</h2>
+            <p>Completa los datos para publicar un evento universitario.</p>
+        </div>
+
+        {#if cargandoOpciones}
+            <p>Cargando información...</p>
+        {:else if mensajeOpciones}
+            <p>{mensajeOpciones}</p>
+        {:else}
+            <form class="formulario-evento" onsubmit={crearActividad}>
+
+                <label>Nombre del evento</label>
+                <input bind:value={nuevaActividad.nombre} required placeholder="Nombre de la actividad">
+
+                <label>Descripción</label>
+                <textarea bind:value={nuevaActividad.descripcion} placeholder="Describe la actividad"></textarea>
+
+                <div class="campos-dobles">
+                    <div>
+                        <label>Fecha</label>
+                        <input type="date" bind:value={nuevaActividad.fecha} required>
+                    </div>
+
+                    <div>
+                        <label>Cupo máximo</label>
+                        <input type="number" min="1" bind:value={nuevaActividad.cupo_maximo} required>
+                    </div>
+                </div>
+
+                <div class="campos-dobles">
+                    <div>
+                        <label>Hora de inicio</label>
+                        <input type="time" bind:value={nuevaActividad.hora_inicio} required>
+                    </div>
+
+                    <div>
+                        <label>Hora de finalización</label>
+                        <input type="time" bind:value={nuevaActividad.hora_fin} required>
+                    </div>
+                </div>
+
+                <label>Lugar</label>
+                <select bind:value={nuevaActividad.id_lugar} required>
+                    <option value="">Selecciona un lugar</option>
+                    {#each lugares as lugar}
+                        <option value={lugar.id}>{lugar.nombre}</option>
+                    {/each}
+                </select>
+
+                <label>Categoría</label>
+                <select bind:value={nuevaActividad.id_categoria} required>
+                    <option value="">Selecciona una categoría</option>
+                    {#each categorias as categoria}
+                        <option value={categoria.id}>{categoria.nombre}</option>
+                    {/each}
+                </select>
+
+                <label>Estado de la actividad</label>
+                <select bind:value={nuevaActividad.id_estado_actividad} required>
+                    <option value="">Selecciona un estado</option>
+                    {#each estados as estado}
+                        <option value={estado.id}>{estado.nombre}</option>
+                    {/each}
+                </select>
+
+                {#if mensajeActividad}
+                    <p class:error-mensaje={errorActividad} class:exito-mensaje={!errorActividad}>
+                        {mensajeActividad}
+                    </p>
+                {/if}
+
+                <button type="submit" disabled={guardandoActividad}>
+                    {guardandoActividad ? 'Guardando...' : '＋ Crear evento'}
+                </button>
+
+            </form>
+        {/if}
+    </section>
+
 
         {:else if seccionActual === 'eventos'}
 
@@ -817,6 +894,78 @@ async function crearActividad(evento) {
         color: #8995a9;
         font-size: 13px;
     }
+
+.formulario-evento {
+    background: white;
+    padding: 30px;
+    border-radius: 18px;
+    max-width: 850px;
+    box-shadow: 0 5px 20px #15264a08;
+}
+
+.formulario-evento label {
+    display: block;
+    margin: 18px 0 7px;
+    font-size: 13px;
+    font-weight: 900;
+    color: #34415f;
+}
+
+.formulario-evento input,
+.formulario-evento textarea,
+.formulario-evento select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #dfe5ef;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.formulario-evento input:focus,
+.formulario-evento textarea:focus,
+.formulario-evento select:focus {
+    border-color: #0785b6;
+}
+
+.formulario-evento textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.campos-dobles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.formulario-evento button {
+    width: 100%;
+    margin-top: 25px;
+    padding: 15px;
+    background: #0785b6;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 1000;
+    cursor: pointer;
+}
+
+.formulario-evento button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.error-mensaje {
+    color: #d93636;
+}
+
+.exito-mensaje {
+    color: #159a65;
+}
+
 
     @media (max-width: 1100px) {
         .estadisticas {
