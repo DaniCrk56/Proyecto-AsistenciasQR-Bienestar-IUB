@@ -512,15 +512,20 @@
 
     /* PRESENTACIÓN */
 
-    .presentacion {
-        min-height: 355px;
-        padding: 65px 10%;
-        background: linear-gradient(115deg, #142044, #174d82);
-        position: relative;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-    }
+
+.presentacion {
+    width: 92%;
+    min-height: 355px;
+    margin: 28px auto 0;
+    padding: 65px 8%;
+    background: linear-gradient(115deg, #111c3b, #1d4d8c);
+    border-radius: 23px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(20, 32, 68, .12);
+}
 
     .presentacion-contenido {
         position: relative;
@@ -1100,10 +1105,14 @@
             font-size: 19px;
         }
 
-        .presentacion {
-            min-height: 330px;
-            padding: 45px 7%;
-        }
+       
+.presentacion {
+    width: 94%;
+    min-height: 330px;
+    margin: 18px auto 0;
+    padding: 45px 7%;
+    border-radius: 18px;
+}
 
         .presentacion-contenido {
             max-width: 100%;
