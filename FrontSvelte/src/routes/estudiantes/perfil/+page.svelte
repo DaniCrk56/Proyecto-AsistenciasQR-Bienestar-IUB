@@ -45,7 +45,6 @@
 
 <div class="pagina-perfil">
 
-    <!-- ENCABEZADO PRINCIPAL -->
     <header class="encabezado-perfil">
         <a href="/estudiantes/eventos" class="identidad-perfil">
             <div class="logo-contenedor">
@@ -72,27 +71,17 @@
         </button>
 
         <nav class:abierto={menuAbierto} class="navegacion-perfil">
-            <a
-                href="/estudiantes/eventos"
-                onclick={() => menuAbierto = false}
-            >
+            <a href="/estudiantes/eventos" onclick={() => menuAbierto = false}>
                 <span>▦</span>
                 Eventos
             </a>
 
-            <a
-                href="/estudiantes/mi-qr"
-                onclick={() => menuAbierto = false}
-            >
+            <a href="/estudiantes/mi-qr" onclick={() => menuAbierto = false}>
                 <span>▣</span>
                 Mi código QR
             </a>
 
-            <a
-                href="/estudiantes/perfil"
-                class="activo"
-                onclick={() => menuAbierto = false}
-            >
+            <a href="/estudiantes/perfil" class="activo" onclick={() => menuAbierto = false}>
                 <span>●</span>
                 Mi perfil
             </a>
@@ -120,7 +109,6 @@
                 </div>
 
                 <article class="tarjeta-perfil">
-
                     <div class="perfil-principal">
                         <div class="avatar">♙</div>
 
@@ -135,7 +123,6 @@
                     <div class="separador"></div>
 
                     <div class="datos-grid">
-
                         <div class="dato">
                             <div class="dato-icono">▤</div>
                             <div>
@@ -167,7 +154,6 @@
                                 <strong>{estudiante.codigo}</strong>
                             </div>
                         </div>
-
                     </div>
                 </article>
             </section>
@@ -188,9 +174,7 @@
                 </div>
 
                 {#if eventosPendientes.length > 0}
-
                     <div class="lista-eventos">
-
                         {#each eventosPendientes as evento (evento.id)}
                             <article class="tarjeta-evento">
 
@@ -219,24 +203,18 @@
 
                             </article>
                         {/each}
-
                     </div>
-
                 {:else}
-
                     <div class="sin-eventos">
                         <div class="icono-check">✓</div>
                         <h3>¡No tienes eventos pendientes!</h3>
                         <p>Cuando te inscribas a una actividad, aparecerá aquí. Si ya asististe, dejará de mostrarse en esta sección.</p>
                         <a href="/estudiantes/eventos">Ver eventos disponibles</a>
                     </div>
-
                 {/if}
 
             </section>
-
         </div>
-
     </main>
 
     <footer class="footer-perfil">
@@ -296,7 +274,6 @@
         display: flex;
         align-items: center;
         gap: 13px;
-        text-decoration: none;
         flex-shrink: 0;
     }
 
@@ -344,23 +321,45 @@
     }
 
     .navegacion-perfil a {
+        position: relative;
         color: #e2e7f4;
-        text-decoration: none;
         font-size: 16px;
         font-weight: 900;
         display: flex;
         align-items: center;
         gap: 9px;
-        transition: .2s;
+        padding: 8px 0 10px;
+        transition: color .3s ease;
     }
 
-    .navegacion-perfil a span {
-        font-size: 20px;
+    /* SUBRAYADO ANIMADO */
+
+    .navegacion-perfil a::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 3px;
+        background: #f5ca24;
+        border-radius: 5px;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .3s ease;
+    }
+
+    .navegacion-perfil a:hover::after,
+    .navegacion-perfil a.activo::after {
+        transform: scaleX(1);
     }
 
     .navegacion-perfil a:hover,
     .navegacion-perfil a.activo {
         color: #f5ca24;
+    }
+
+    .navegacion-perfil a span {
+        font-size: 20px;
     }
 
     .boton-menu {
@@ -375,20 +374,19 @@
         display: block;
     }
 
-
-.portada-perfil {
-    width: 92%;
-    min-height: 225px;
-    margin: 28px auto 0;
-    padding: 45px 8%;
-    background: linear-gradient(110deg, #111c3b, #174b83, #0787b5);
-    border-radius: 23px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 12px 30px rgba(20, 32, 68, .12);
-}
+    .portada-perfil {
+        width: 92%;
+        min-height: 225px;
+        margin: 28px auto 0;
+        padding: 45px 8%;
+        background: linear-gradient(110deg, #111c3b, #174b83, #0787b5);
+        border-radius: 23px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(20, 32, 68, .12);
+    }
 
     .portada-texto {
         position: relative;
@@ -480,6 +478,11 @@
         align-items: center;
         color: #0785b6;
         font-size: 35px;
+        transition: transform .3s ease;
+    }
+
+    .avatar:hover {
+        transform: rotate(-8deg) scale(1.08);
     }
 
     .perfil-principal h3 {
@@ -534,6 +537,12 @@
         justify-content: center;
         align-items: center;
         font-size: 19px;
+        transition: transform .3s ease, background .3s ease;
+    }
+
+    .dato:hover .dato-icono {
+        transform: scale(1.1) rotate(-5deg);
+        background: #d8f0fc;
     }
 
     .dato div:last-child {
@@ -589,6 +598,11 @@
         justify-content: center;
         align-items: center;
         color: #087eaa;
+        transition: transform .3s ease;
+    }
+
+    .contador-eventos:hover {
+        transform: scale(1.07);
     }
 
     .contador-eventos strong {
@@ -621,12 +635,12 @@
         border: 1px solid #e9edf5;
         border-radius: 17px;
         box-shadow: 0 5px 20px #17234407;
-        transition: .2s;
+        transition: transform .3s ease, box-shadow .3s ease;
     }
 
     .tarjeta-evento:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px #17234410;
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(20, 32, 68, .10);
     }
 
     .evento-icono {
@@ -640,6 +654,12 @@
         align-items: center;
         border-radius: 15px;
         font-size: 25px;
+        transition: transform .3s ease, background .3s ease;
+    }
+
+    .tarjeta-evento:hover .evento-icono {
+        transform: scale(1.1) rotate(-5deg);
+        background: #d8f0fc;
     }
 
     .evento-informacion {
@@ -709,13 +729,13 @@
         color: white;
         border-radius: 12px;
         font-weight: 900;
-        text-decoration: none;
-        transition: .3s;
+        transition: all .3s ease;
     }
 
     .boton-qr:hover {
         background: #056b91;
-        transform: translateY(-2px);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 18px rgba(7, 133, 182, .2);
     }
 
     /* SIN EVENTOS */
@@ -727,6 +747,7 @@
         border-radius: 18px;
         padding: 45px 20px;
         text-align: center;
+        animation: entrarAbajo .8s ease both;
     }
 
     .icono-check {
@@ -766,6 +787,12 @@
         padding: 11px 20px;
         font-size: 12px;
         font-weight: 900;
+        transition: all .3s ease;
+    }
+
+    .sin-eventos a:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 18px rgba(7, 133, 182, .2);
     }
 
     /* FOOTER */
@@ -776,6 +803,7 @@
         background: #111c3b;
         padding: 25px 7%;
         color: white;
+        animation: entrarAbajo .8s ease both;
     }
 
     .footer-contenido {
@@ -833,8 +861,6 @@
             width: fit-content;
         }
     }
-
-    /* MENÚ MÓVIL: IGUAL AL DE LAS OTRAS PÁGINAS */
 
     @media (max-width: 700px) {
         .encabezado-perfil {
@@ -901,19 +927,22 @@
             border-radius: 8px;
         }
 
+        .navegacion-perfil a::after {
+            left: 10px;
+            width: calc(100% - 20px);
+        }
+
         .navegacion-perfil a span {
             font-size: 19px;
         }
 
-   
-.portada-perfil {
-    width: 94%;
-    min-height: 210px;
-    margin: 18px auto 0;
-    padding: 35px 6%;
-    border-radius: 18px;
-}
-
+        .portada-perfil {
+            width: 94%;
+            min-height: 210px;
+            margin: 18px auto 0;
+            padding: 35px 6%;
+            border-radius: 18px;
+        }
 
         .portada-texto h1 {
             font-size: 33px;
@@ -975,128 +1004,71 @@
         }
     }
 
-/* ANIMACIONES DEL PERFIL */
+    /* ANIMACIONES */
 
-.encabezado-perfil {
-    animation: entrarArriba .7s ease both;
-}
-
-.portada-perfil {
-    animation: entrarAbajo .8s ease both;
-}
-
-.portada-perfil .decoracion-portada {
-    animation: flotarPerfil 6s ease-in-out infinite;
-}
-
-.tarjeta-perfil,
-.tarjeta-evento,
-.sin-eventos {
-    transition: transform .3s ease, box-shadow .3s ease;
-    animation: entrarAbajo .8s ease both;
-}
-
-.tarjeta-perfil:hover,
-.tarjeta-evento:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(20, 32, 68, .10);
-}
-
-.dato-icono,
-.evento-icono {
-    transition: transform .3s ease, background .3s ease;
-}
-
-.dato:hover .dato-icono,
-.tarjeta-evento:hover .evento-icono {
-    transform: scale(1.1) rotate(-5deg);
-    background: #d8f0fc;
-}
-
-.contador-eventos {
-    transition: transform .3s ease;
-}
-
-.contador-eventos:hover {
-    transform: scale(1.07);
-}
-
-.boton-qr,
-.sin-eventos a {
-    transition: all .3s ease;
-}
-
-.boton-qr:hover,
-.sin-eventos a:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 18px rgba(7, 133, 182, .2);
-}
-
-.footer-perfil {
-    animation: entrarAbajo .8s ease both;
-}
-
-@keyframes entrarArriba {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
+    .encabezado-perfil {
+        animation: entrarArriba .7s ease both;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
-@keyframes entrarAbajo {
-    from {
-        opacity: 0;
-        transform: translateY(22px);
+    .portada-perfil {
+        animation: entrarAbajo .8s ease both;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .portada-perfil .decoracion-portada {
+        animation: flotarPerfil 6s ease-in-out infinite;
     }
-}
 
-@keyframes flotarPerfil {
-    0%, 100% {
-        transform: translateY(0);
+    .tarjeta-perfil {
+        animation: entrarAbajo .8s ease both;
+        transition: transform .3s ease, box-shadow .3s ease;
     }
-    50% {
-        transform: translateY(16px);
+
+    .tarjeta-perfil:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(20, 32, 68, .10);
     }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation: none !important;
-        transition: none !important;
+    .tarjeta-evento {
+        animation: entrarAbajo .8s ease both;
     }
-}
 
-/* SUBRAYADO ANIMADO DEL MENÚ */
+    @keyframes entrarArriba {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-.enlace {
-    position: relative;
-    padding-bottom: 7px;
-}
-.enlace::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    background: #f5ca24;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform .3s ease;
-}
+    @keyframes entrarAbajo {
+        from {
+            opacity: 0;
+            transform: translateY(22px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-.enlace:hover::after,
-.enlace.activo::after {
-    transform: scaleX(1);
-}
+    @keyframes flotarPerfil {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(16px);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
 </style>
