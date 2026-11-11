@@ -23,6 +23,30 @@ class UsuarioRepository:
         conn.close()
         return filas
 
+    def verificar_datos_registro(self, correo, documento):
+        conn = self.db.get_connection()
+        if not conn:
+            return None
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                EXISTS(
+                    SELECT 1 FROM usuario
+                    WHERE correo_institucional = %s
+                ) AS correo_existe,
+                EXISTS(
+                    SELECT 1 FROM usuario
+                    WHERE numero_documento = %s
+                ) AS documento_existe;
+        """, (correo, documento))
+
+        resultado = cursor.fetchone()
+        conn.close()
+
+        return resultado
+
   
 
     def obtener_por_correo(self, correo):
