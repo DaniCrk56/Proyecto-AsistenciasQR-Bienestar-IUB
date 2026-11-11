@@ -1,18 +1,66 @@
 
 <script>
+    import { onMount } from 'svelte';
+    import { registrarEstudiante } from '#lib/services/api_autht.js';
+
     let nombres = '';
     let apellidos = '';
     let tipo_documento = '';
     let numero_documento = '';
     let correo_institucional = '';
     let programa = '';
+    let busqueda_programa = '';
+    let programas = [];
+    let programasFiltrados = [];
+    let listaProgramasAbierta = false;
+    let cargandoProgramas = true;
+
     let password = '';
     let confirmar_password = '';
 
     let mensaje = '';
     let error = false;
+    let cargando = false;
 
-    function manejarRegistro(evento) {
+    onMount(async () => {
+        try {
+            const respuesta = await fetch(
+                'https://proyecto-asistenciasqr-bienestar-iub.onrender.com/usuarios/programas'
+            );
+
+            if (!respuesta.ok) {
+                throw new Error('No fue posible cargar los programas académicos.');
+            }
+
+            programas = await respuesta.json();
+            programasFiltrados = programas;
+        } catch (e) {
+            error = true;
+            mensaje = 'No fue posible cargar las carreras. Intenta nuevamente.';
+        } finally {
+            cargandoProgramas = false;
+        }
+    });
+
+    function buscarProgramas() {
+        programa = '';
+
+        const busqueda = busqueda_programa.toLowerCase().trim();
+
+        programasFiltrados = programas.filter((item) =>
+            item.nombre.toLowerCase().includes(busqueda)
+        );
+
+        listaProgramasAbierta = true;
+    }
+
+    function seleccionarPrograma(item) {
+        programa = item.id;
+        busqueda_programa = item.nombre;
+        listaProgramasAbierta = false;
+    }
+
+    async function manejarRegistro(evento) {
         evento.preventDefault();
 
         mensaje = '';
@@ -24,9 +72,55 @@
             return;
         }
 
-        mensaje = 'Formulario listo. En el siguiente paso conectaremos el registro con el sistema.';
+        if (!programa) {
+            error = true;
+            mensaje = 'Selecciona un programa académico de la lista.';
+            return;
+        }
+
+        if (!tipo_documento) {
+            error = true;
+            mensaje = 'Selecciona tu tipo de documento.';
+            return;
+        }
+
+        cargando = true;
+
+        try {
+            const datos = {
+                nombres: nombres.trim(),
+                apellidos: apellidos.trim(),
+                id_tipo_documento: Number(tipo_documento),
+                numero_documento: numero_documento.trim(),
+                correo_institucional: correo_institucional.trim(),
+                password: password,
+                id_programa: Number(programa)
+            };
+
+            const respuesta = await registrarEstudiante(datos);
+
+            error = false;
+            mensaje = respuesta.mensaje || 'Estudiante registrado exitosamente.';
+
+            nombres = '';
+            apellidos = '';
+            tipo_documento = '';
+            numero_documento = '';
+            correo_institucional = '';
+            programa = '';
+            busqueda_programa = '';
+            password = '';
+            confirmar_password = '';
+
+        } catch (e) {
+            error = true;
+            mensaje = e.message || 'No fue posible completar el registro.';
+        } finally {
+            cargando = false;
+        }
     }
 </script>
+
 
 <svelte:head>
     <title>Crear cuenta | Bienestar Universitario IUB</title>
@@ -128,11 +222,11 @@
                                 bind:value={tipo_documento}
                                 required
                             >
-                                <option value="" disabled>Selecciona tu documento</option>
-                                <option value="CC">Cédula de ciudadanía</option>
-                                <option value="TI">Tarjeta de identidad</option>
-                                <option value="CE">Cédula de extranjería</option>
-                                <option value="PAS">Pasaporte</option>
+                            <option value="" disabled>Selecciona tu documento</option>
+<option value="1">Cédula de ciudadanía</option>
+<option value="2">Tarjeta de identidad</option>
+<option value="3">Cédula de extranjería</option>
+<option value="4">Pasaporte</option>
                             </select>
                         </div>
                     </div>
@@ -169,20 +263,49 @@
                         </div>
                     </div>
 
-                    <div class="form-group completo">
-                        <label for="programa">Programa académico</label>
+                   
+<div class="form-group completo">
+    <label for="programa">Programa académico</label>
 
-                        <div class="input-contenedor">
-                            <span class="icono-input">🎓</span>
-                            <input
-                                type="text"
-                                id="programa"
-                                bind:value={programa}
-                                placeholder="Escribe tu programa académico"
-                                required
-                            />
-                        </div>
-                    </div>
+    <div class="input-contenedor">
+        <span class="icono-input">🎓</span>
+
+        <input
+            type="text"
+            id="programa"
+            bind:value={busqueda_programa}
+            oninput={buscarProgramas}
+            onfocus={() => listaProgramasAbierta = true}
+            placeholder={cargandoProgramas
+                ? 'Cargando programas...'
+                : 'Escribe para buscar tu carrera'}
+            autocomplete="off"
+            disabled={cargandoProgramas || cargando}
+            required
+        />
+    </div>
+
+    {#if listaProgramasAbierta && !cargandoProgramas}
+        <div class="lista-programas">
+            {#if programasFiltrados.length > 0}
+                {#each programasFiltrados as item (item.id)}
+                    <button
+                        type="button"
+                        class="opcion-programa"
+                        onclick={() => seleccionarPrograma(item)}
+                    >
+                        {item.nombre}
+                    </button>
+                {/each}
+            {:else}
+                <div class="sin-programas">
+                    No se encontraron carreras.
+                </div>
+            {/if}
+        </div>
+    {/if}
+</div>
+
 
                     <div class="form-group">
                         <label for="password">Contraseña</label>
@@ -674,4 +797,47 @@
             transition: none;
         }
     }
+
+.lista-programas {
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #dce5ed;
+    border-radius: 11px;
+    margin-top: 7px;
+    box-shadow: 0 8px 20px rgba(15, 55, 80, 0.10);
+    position: relative;
+    z-index: 5;
+}
+
+.opcion-programa {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-bottom: 1px solid #edf1f5;
+    background: white;
+    text-align: left;
+    color: #34495e;
+    font-size: 0.86rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.opcion-programa:hover {
+    background: #eaf8ff;
+    color: #008cbd;
+}
+
+.opcion-programa:last-child {
+    border-bottom: none;
+}
+
+.sin-programas {
+    padding: 14px;
+    text-align: center;
+    color: #82909d;
+    font-size: 0.85rem;
+}
+
 </style>
