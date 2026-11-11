@@ -37,26 +37,7 @@
         }
     });
 
-    let eventos = [
-        {
-            id: 1,
-            nombre: 'Jornada deportiva',
-            categoria: 'Deportes',
-            fecha: '20 de noviembre de 2026',
-            hora: '8:00 a. m. - 10:00 a. m.',
-            lugar: 'Cancha universitaria',
-            estado: 'pendiente'
-        },
-        {
-            id: 2,
-            nombre: 'Festival cultural',
-            categoria: 'Cultura',
-            fecha: '25 de noviembre de 2026',
-            hora: '2:00 p. m. - 5:00 p. m.',
-            lugar: 'Auditorio principal',
-            estado: 'pendiente'
-        }
-    ];
+   let eventos = [];
 
     $: eventosPendientes = eventos.filter(
         evento => evento.estado === 'pendiente'
