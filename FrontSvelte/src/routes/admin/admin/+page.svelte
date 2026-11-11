@@ -1,62 +1,64 @@
 
-import { onMount } from 'svelte';
+<script>
+    import { onMount } from 'svelte';
 
-let seccionActual = 'inicio';
-let eventos = [];
+    let seccionActual = 'inicio';
+    let eventos = [];
 
-let lugares = [];
-let categorias = [];
-let estados = [];
+    let lugares = [];
+    let categorias = [];
+    let estados = [];
 
-let cargandoOpciones = false;
-let mensajeOpciones = '';
+    let cargandoOpciones = false;
+    let mensajeOpciones = '';
 
-const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
+    const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
 
-let opciones = [
-    { id: 'inicio', nombre: 'Panel principal', icono: '⌂' },
-    { id: 'crear', nombre: 'Crear evento', icono: '＋' },
-    { id: 'eventos', nombre: 'Gestionar eventos', icono: '▦' },
-    { id: 'scanner', nombre: 'Escanear QR', icono: '▣' },
-    { id: 'asistencia', nombre: 'Asistencias', icono: '☷' },
-    { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
-];
+    let opciones = [
+        { id: 'inicio', nombre: 'Panel principal', icono: '⌂' },
+        { id: 'crear', nombre: 'Crear evento', icono: '＋' },
+        { id: 'eventos', nombre: 'Gestionar eventos', icono: '▦' },
+        { id: 'scanner', nombre: 'Escanear QR', icono: '▣' },
+        { id: 'asistencia', nombre: 'Asistencias', icono: '☷' },
+        { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
+    ];
 
-function cambiarSeccion(seccion) {
-    seccionActual = seccion;
+    function cambiarSeccion(seccion) {
+        seccionActual = seccion;
 
-    if (seccion === 'crear') {
-        cargarOpciones();
+        if (seccion === 'crear') {
+            cargarOpciones();
+        }
     }
-}
 
-async function cargarOpciones() {
-    cargandoOpciones = true;
-    mensajeOpciones = '';
+    async function cargarOpciones() {
+        cargandoOpciones = true;
+        mensajeOpciones = '';
 
-    try {
-        const respuestaLugares = await fetch(URL_BASE + '/lugares/');
-        const respuestaCategorias = await fetch(URL_BASE + '/categorias-actividad/');
-        const respuestaEstados = await fetch(URL_BASE + '/estados-actividad/');
+        try {
+            const respuestaLugares = await fetch(URL_BASE + '/lugares/');
+            const respuestaCategorias = await fetch(URL_BASE + '/categorias-actividad/');
+            const respuestaEstados = await fetch(URL_BASE + '/estados-actividad/');
 
-        if (!respuestaLugares.ok || !respuestaCategorias.ok || !respuestaEstados.ok) {
-            throw new Error('No se pudieron cargar las opciones.');
+            if (!respuestaLugares.ok || !respuestaCategorias.ok || !respuestaEstados.ok) {
+                throw new Error('No se pudieron cargar las opciones.');
+            }
+
+            lugares = await respuestaLugares.json();
+            categorias = await respuestaCategorias.json();
+            estados = await respuestaEstados.json();
+
+        } catch (error) {
+            mensajeOpciones = error.message || 'Error al cargar los datos.';
         }
 
-        lugares = await respuestaLugares.json();
-        categorias = await respuestaCategorias.json();
-        estados = await respuestaEstados.json();
-
-    } catch (error) {
-        mensajeOpciones = error.message || 'Error al cargar los datos.';
+        cargandoOpciones = false;
     }
 
-    cargandoOpciones = false;
-}
-
-function abrirScanner(evento) {
-    window.location.href = '/admin/scanner?id_evento=' + evento.id;
-}
+    function abrirScanner(evento) {
+        window.location.href = '/admin/scanner?id_evento=' + evento.id;
+    }
+</script>
 
 
 <svelte:head>
