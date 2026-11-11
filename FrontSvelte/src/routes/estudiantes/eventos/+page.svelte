@@ -1524,7 +1524,7 @@ if (actividades.length === 0) {
     padding: 12px 15px;
     background: transparent;
     border: none;
-    color: inherit;
+    color: white;
     font-family: inherit;
     font-size: inherit;
     text-align: left;
