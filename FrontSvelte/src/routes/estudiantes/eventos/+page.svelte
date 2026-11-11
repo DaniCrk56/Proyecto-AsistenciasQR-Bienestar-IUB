@@ -1540,7 +1540,7 @@ if (actividades.length === 0) {
     bottom: 5px;
     width: 0;
     height: 2px;
-    background: currentColor;
+    background: #0785b6;
     transition: width 0.3s ease;
 }
 
