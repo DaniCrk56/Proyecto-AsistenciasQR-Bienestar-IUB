@@ -375,16 +375,20 @@
         display: block;
     }
 
-    .portada-perfil {
-        width: 100%;
-        min-height: 225px;
-        padding: 45px 8%;
-        background: linear-gradient(110deg, #111c3b, #174b83, #0787b5);
-        display: flex;
-        align-items: center;
-        position: relative;
-        overflow: hidden;
-    }
+
+.portada-perfil {
+    width: 92%;
+    min-height: 225px;
+    margin: 28px auto 0;
+    padding: 45px 8%;
+    background: linear-gradient(110deg, #111c3b, #174b83, #0787b5);
+    border-radius: 23px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(20, 32, 68, .12);
+}
 
     .portada-texto {
         position: relative;
@@ -901,10 +905,15 @@
             font-size: 19px;
         }
 
-        .portada-perfil {
-            min-height: 210px;
-            padding: 35px 6%;
-        }
+   
+.portada-perfil {
+    width: 94%;
+    min-height: 210px;
+    margin: 18px auto 0;
+    padding: 35px 6%;
+    border-radius: 18px;
+}
+
 
         .portada-texto h1 {
             font-size: 33px;
@@ -965,5 +974,106 @@
             align-items: flex-start;
         }
     }
+
+/* ANIMACIONES DEL PERFIL */
+
+.encabezado-perfil {
+    animation: entrarArriba .7s ease both;
+}
+
+.portada-perfil {
+    animation: entrarAbajo .8s ease both;
+}
+
+.portada-perfil .decoracion-portada {
+    animation: flotarPerfil 6s ease-in-out infinite;
+}
+
+.tarjeta-perfil,
+.tarjeta-evento,
+.sin-eventos {
+    transition: transform .3s ease, box-shadow .3s ease;
+    animation: entrarAbajo .8s ease both;
+}
+
+.tarjeta-perfil:hover,
+.tarjeta-evento:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(20, 32, 68, .10);
+}
+
+.dato-icono,
+.evento-icono {
+    transition: transform .3s ease, background .3s ease;
+}
+
+.dato:hover .dato-icono,
+.tarjeta-evento:hover .evento-icono {
+    transform: scale(1.1) rotate(-5deg);
+    background: #d8f0fc;
+}
+
+.contador-eventos {
+    transition: transform .3s ease;
+}
+
+.contador-eventos:hover {
+    transform: scale(1.07);
+}
+
+.boton-qr,
+.sin-eventos a {
+    transition: all .3s ease;
+}
+
+.boton-qr:hover,
+.sin-eventos a:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(7, 133, 182, .2);
+}
+
+.footer-perfil {
+    animation: entrarAbajo .8s ease both;
+}
+
+@keyframes entrarArriba {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes entrarAbajo {
+    from {
+        opacity: 0;
+        transform: translateY(22px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes flotarPerfil {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(16px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
 
 </style>
