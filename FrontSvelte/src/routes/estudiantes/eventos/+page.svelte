@@ -182,6 +182,10 @@
                 <span>●</span>
                 Mi perfil
             </a>
+<button class="cerrar" onclick={cerrarSesion}>
+    <span class="icono">↪</span>
+    Cerrar sesión
+</button>
         </nav>
     </header>
 
