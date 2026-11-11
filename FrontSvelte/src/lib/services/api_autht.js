@@ -1,6 +1,5 @@
 
-const URL_BASE = '/api/login'; 
-
+const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com/auth/login';
 async function procesarRespuesta(respuesta) {
     if (!respuesta.ok) {
         const errorData = await respuesta.json().catch(() => ({}));
