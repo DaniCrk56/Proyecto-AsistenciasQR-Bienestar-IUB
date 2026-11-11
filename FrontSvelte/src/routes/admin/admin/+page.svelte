@@ -2,35 +2,7 @@
 <script>
     let seccionActual = 'inicio';
 
-    let eventos = [
-        {
-            id: 1,
-            nombre: 'Jornada deportiva',
-            categoria: 'Deportes',
-            fecha: '20 de noviembre de 2026',
-            hora: '8:00 a. m. - 10:00 a. m.',
-            lugar: 'Cancha universitaria',
-            estado: 'Activo'
-        },
-        {
-            id: 2,
-            nombre: 'Festival cultural',
-            categoria: 'Cultura',
-            fecha: '25 de noviembre de 2026',
-            hora: '2:00 p. m. - 5:00 p. m.',
-            lugar: 'Auditorio principal',
-            estado: 'Activo'
-        },
-        {
-            id: 3,
-            nombre: 'Encuentro de bienestar',
-            categoria: 'Bienestar',
-            fecha: '28 de noviembre de 2026',
-            hora: '9:00 a. m. - 12:00 p. m.',
-            lugar: 'Bloque administrativo',
-            estado: 'Activo'
-        }
-    ];
+let eventos = [];
 
     let opciones = [
         { id: 'inicio', nombre: 'Panel principal', icono: '⌂' },
