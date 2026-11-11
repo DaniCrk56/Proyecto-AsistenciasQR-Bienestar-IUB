@@ -22,7 +22,8 @@
     "#lib": "./src/lib/index.js",
     "#lib/*": "./src/lib/*"
   },
-  "dependencies": {
-    "swiper": "^14.4.0"
-  }
+ "dependencies": {
+  "swiper": "^14.4.0",
+  "qrcode": "^1.5.4"
+}
 }
