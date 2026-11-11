@@ -64,7 +64,14 @@ def registrar_estudiante(datos: DatosRegistro):
     if datos.id_tipo_documento not in [1, 2, 3, 4]:
         raise HTTPException(status_code=400, detail="Tipo de documento inválido")
 
-    if datos.id_programa not in [1, 2, 3]:
+    programas = repo.obtener_programas()
+
+    programa_valido = any(
+        programa["id"] == datos.id_programa
+        for programa in programas
+    )
+
+    if not programa_valido:
         raise HTTPException(status_code=400, detail="Programa académico inválido")
 
     existentes = repo.verificar_datos_registro(
