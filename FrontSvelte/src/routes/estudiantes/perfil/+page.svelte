@@ -1,14 +1,34 @@
 
 <script>
+    import { onMount } from 'svelte';
+
     let estudiante = {
-        nombre: 'Nombre del estudiante',
-        documento: 'Documento del estudiante',
-        correo: 'Correo institucional',
-        programa: 'Programa académico',
-        codigo: 'IUB-EST-2026-001'
+        nombre: 'Cargando...',
+        documento: 'No registrado',
+        correo: 'No registrado',
+        programa: 'No registrado',
+        codigo: 'No registrado'
     };
 
     let menuAbierto = false;
+
+    onMount(() => {
+        const usuarioGuardado = localStorage.getItem('usuario');
+
+        if (usuarioGuardado) {
+            const usuario = JSON.parse(usuarioGuardado);
+
+            estudiante = {
+                nombre: `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim() || 'Nombre no disponible',
+                documento: usuario.documento || 'No registrado',
+                correo: usuario.correo_institucional || 'No registrado',
+                programa: usuario.programa || 'No registrado',
+                codigo: usuario.codigo_estudiantil || 'No registrado'
+            };
+        } else {
+            estudiante.nombre = 'No se encontró el usuario';
+        }
+    });
 
     let eventos = [
         {
@@ -35,6 +55,7 @@
         evento => evento.estado === 'pendiente'
     );
 </script>
+
 
 <svelte:head>
     <title>Mi perfil | Bienestar Universitario</title>
