@@ -12,6 +12,22 @@
     let cargandoOpciones = false;
     let mensajeOpciones = '';
 
+let guardandoActividad = false;
+let mensajeActividad = '';
+let errorActividad = false;
+
+let nuevaActividad = {
+    nombre: '',
+    descripcion: '',
+    fecha: '',
+    hora_inicio: '',
+    hora_fin: '',
+    cupo_maximo: '',
+    id_lugar: '',
+    id_categoria: '',
+    id_estado_actividad: ''
+};
+
     const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
 
     let opciones = [
@@ -54,6 +70,58 @@
 
         cargandoOpciones = false;
     }
+async function crearActividad(evento) {
+    evento.preventDefault();
+
+    mensajeActividad = '';
+    errorActividad = false;
+    guardandoActividad = true;
+
+    try {
+        const respuesta = await fetch(URL_BASE + '/actividades/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nombre: nuevaActividad.nombre,
+                descripcion: nuevaActividad.descripcion,
+                fecha: nuevaActividad.fecha,
+                hora_inicio: nuevaActividad.hora_inicio,
+                hora_fin: nuevaActividad.hora_fin,
+                cupo_maximo: Number(nuevaActividad.cupo_maximo),
+                id_lugar: Number(nuevaActividad.id_lugar),
+                id_categoria: Number(nuevaActividad.id_categoria),
+                id_estado_actividad: Number(nuevaActividad.id_estado_actividad)
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.detail || 'No se pudo registrar el evento.');
+        }
+
+        mensajeActividad = '¡Evento registrado correctamente!';
+        nuevaActividad = {
+            nombre: '',
+            descripcion: '',
+            fecha: '',
+            hora_inicio: '',
+            hora_fin: '',
+            cupo_maximo: '',
+            id_lugar: '',
+            id_categoria: '',
+            id_estado_actividad: ''
+        };
+
+    } catch (error) {
+        errorActividad = true;
+        mensajeActividad = error.message || 'Ocurrió un error al registrar el evento.';
+    }
+
+    guardandoActividad = false;
+}
 
     function abrirScanner(evento) {
         window.location.href = '/admin/scanner?id_evento=' + evento.id;
