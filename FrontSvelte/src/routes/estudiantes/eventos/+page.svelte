@@ -260,7 +260,7 @@
             <div class="paginacion-eventos"></div>
         </div>
 
-        <!-- INFORMACIÓN DEL EVENTO -->
+      {#if actividades.length > 0 && actividades[actividadSeleccionada]}
         <section class="detalle-evento">
             <div class="detalle-texto">
                 <span class="subtitulo">CONOCE MÁS</span>
@@ -319,6 +319,17 @@
                 </div>
             </div>
         </section>
+{:else}
+    <section class="detalle-evento">
+        <div class="detalle-texto">
+            <span class="subtitulo">EVENTOS</span>
+            <h2>No hay eventos disponibles</h2>
+            <p class="descripcion">
+                Próximamente encontrarás aquí las actividades universitarias disponibles.
+            </p>
+        </div>
+    </section>
+{/if}
     </main>
 
     <!-- PIE DE PÁGINA -->
