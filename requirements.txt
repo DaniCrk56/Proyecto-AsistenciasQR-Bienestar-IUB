@@ -5,5 +5,3 @@ python-dotenv
 pydantic
 python-jose[cryptography]
 python-multipart
-bcrypt
-passlib[bcrypt]
