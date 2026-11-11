@@ -8,6 +8,10 @@ repo = UsuarioRepository()
 @router.get("/")
 def listar_usuarios():
     return repo.obtener_todos()
+    
+@router.get("/programas")
+def listar_programas():
+    return repo.obtener_programas()
 
 @router.get("/{usuario_id}")
 def obtener_usuario(usuario_id: int):
