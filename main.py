@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+
 from app.api import (
     rutas_roles,
     rutas_usuarios,
@@ -19,6 +22,16 @@ app = FastAPI(
     title="API de Bienestar Universitario",
     description="Sistema modular de gestión y asistencia con FastAPI y PostgreSQL",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://bienestar-gestiondeeventos.onrender.com"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(rutas_roles.router)
