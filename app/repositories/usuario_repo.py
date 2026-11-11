@@ -1,3 +1,4 @@
+
 from app.core.database import Database
 from app.models.usuario import Usuario
 
@@ -19,18 +20,17 @@ class UsuarioRepository:
             FROM usuario
             WHERE estado = TRUE;
         """)
+
         filas = cursor.fetchall()
         conn.close()
         return filas
 
-    
     def obtener_programas(self):
         conn = self.db.get_connection()
         if not conn:
             return []
 
         cursor = conn.cursor()
-
         cursor.execute("""
             SELECT id, nombre
             FROM programa
@@ -40,9 +40,7 @@ class UsuarioRepository:
 
         programas = cursor.fetchall()
         conn.close()
-
         return programas
-
 
     def verificar_datos_registro(self, correo, documento):
         conn = self.db.get_connection()
@@ -50,7 +48,6 @@ class UsuarioRepository:
             return None
 
         cursor = conn.cursor()
-
         cursor.execute("""
             SELECT
                 EXISTS(
@@ -65,10 +62,7 @@ class UsuarioRepository:
 
         resultado = cursor.fetchone()
         conn.close()
-
         return resultado
-
-  
 
     def obtener_por_correo(self, correo):
         conn = self.db.get_connection()
@@ -100,25 +94,6 @@ class UsuarioRepository:
         usuario = cursor.fetchone()
         conn.close()
         return usuario
-
-
-    
-
-    def actualizar_password_hash(self, usuario_id, nuevo_hash):
-        conn = self.db.get_connection()
-        if not conn:
-            return False
-
-        cursor = conn.cursor()
-        cursor.execute("""
-            UPDATE usuario
-            SET password_hash = %s
-            WHERE id = %s;
-        """, (nuevo_hash, usuario_id))
-
-        conn.commit()
-        conn.close()
-        return True
 
     def obtener_por_id(self, usuario_id):
         conn = self.db.get_connection()
