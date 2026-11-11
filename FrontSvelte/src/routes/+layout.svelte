@@ -1,5 +1,18 @@
 
 <script>
+    import { afterNavigate } from '$app/navigation';
+
+    afterNavigate(() => {
+        const ruta = window.location.pathname;
+
+        const token = localStorage.getItem('token');
+        const usuario = localStorage.getItem('usuario');
+
+        // El login siempre estará disponible
+        if (ruta !== '/' && (!token || !usuario)) {
+            window.location.replace('/');
+        }
+    });
 </script>
 
 <main class="content">
