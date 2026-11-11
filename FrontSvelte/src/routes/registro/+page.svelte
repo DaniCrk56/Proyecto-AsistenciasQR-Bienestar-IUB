@@ -1,7 +1,7 @@
 
 <script>
     import { onMount } from 'svelte';
-    import { registrarEstudiante } from '$lib/services/api_autht.js';
+  import { registrarEstudiante } from '#lib/services/api_autht.js';
 
     let nombres = '';
     let apellidos = '';
