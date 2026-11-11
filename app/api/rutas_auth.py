@@ -2,12 +2,14 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
+from passlib.context import CryptContext
 
 from app.repositories.usuario_repo import UsuarioRepository
+
 
 SECRET_KEY = "1234"
 ALGORITHM = "HS256"
@@ -17,10 +19,22 @@ router = APIRouter(prefix="/auth", tags=["Autenticación y JWT"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 class DatosLogin(BaseModel):
     correo_institucional: str
     password: str
+
+
+class DatosRegistro(BaseModel):
+    nombres: str
+    apellidos: str
+    id_tipo_documento: int
+    numero_documento: str
+    correo_institucional: str
+    password: str
+    id_programa: int
 
 
 def crear_token_acceso(data: dict, expires_delta: Optional[timedelta] = None):
@@ -36,25 +50,89 @@ def crear_token_acceso(data: dict, expires_delta: Optional[timedelta] = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-@router.post("/login")
-def login(datos: DatosLogin):
+@router.post("/registro")
+def registrar_estudiante(datos: DatosRegistro):
+
     repo = UsuarioRepository()
 
+    if not datos.nombres.strip() or not datos.apellidos.strip():
+        raise HTTPException(status_code=400, detail="Completa nombres y apellidos")
+
+    if not datos.numero_documento.strip() or not datos.correo_institucional.strip():
+        raise HTTPException(status_code=400, detail="Completa los datos del documento y correo")
+
+    if len(datos.password) < 8:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener mínimo 8 caracteres")
+
+    if datos.id_tipo_documento not in [1, 2, 3, 4]:
+        raise HTTPException(status_code=400, detail="Tipo de documento inválido")
+
+    if datos.id_programa not in [1, 2, 3]:
+        raise HTTPException(status_code=400, detail="Programa académico inválido")
+
+    existentes = repo.verificar_datos_registro(
+        datos.correo_institucional.strip(),
+        datos.numero_documento.strip()
+    )
+
+    if existentes is None:
+        raise HTTPException(status_code=500, detail="No fue posible conectar con la base de datos")
+
+    if existentes["correo_existe"]:
+        raise HTTPException(status_code=400, detail="Este correo ya está registrado")
+
+    if existentes["documento_existe"]:
+        raise HTTPException(status_code=400, detail="Este documento ya está registrado")
+
+    password_hash = pwd_context.hash(datos.password)
+
+    nuevo_id = repo.crear(
+        datos.nombres.strip(),
+        datos.apellidos.strip(),
+        datos.id_tipo_documento,
+        datos.numero_documento.strip(),
+        datos.correo_institucional.strip(),
+        password_hash,
+        datos.id_programa,
+        3
+    )
+
+    if not nuevo_id:
+        raise HTTPException(status_code=500, detail="No fue posible registrar el estudiante")
+
+    return {
+        "mensaje": "Estudiante registrado exitosamente",
+        "id": nuevo_id
+    }
+
+
+@router.post("/login")
+def login(datos: DatosLogin):
+
+    repo = UsuarioRepository()
     usuario = repo.obtener_por_correo(datos.correo_institucional)
 
     if not usuario:
-        raise HTTPException(
-            status_code=401,
-            detail="Usuario no encontrado"
-        )
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
     password_guardado = usuario.get("password_hash")
 
-    if datos.password != password_guardado:
-        raise HTTPException(
-            status_code=401,
-            detail="Contraseña incorrecta"
-        )
+    if not password_guardado:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+
+    # Compatibilidad con cuentas antiguas en texto plano
+    if password_guardado.startswith("$2"):
+        password_correcta = pwd_context.verify(datos.password, password_guardado)
+    else:
+        password_correcta = datos.password == password_guardado
+
+        # Si la contraseña antigua es correcta, la protegemos
+        if password_correcta:
+            nuevo_hash = pwd_context.hash(datos.password)
+            repo.actualizar_password_hash(usuario["id"], nuevo_hash)
+
+    if not password_correcta:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
     token = crear_token_acceso(
         data={
@@ -65,7 +143,6 @@ def login(datos: DatosLogin):
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
-  
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -80,7 +157,6 @@ def login(datos: DatosLogin):
             "id_rol": usuario["id_rol"]
         }
     }
-
 
 
 def validar_token(token: str = Depends(oauth2_scheme)):
