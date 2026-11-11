@@ -18,12 +18,12 @@
     "svelte": "^5.57.2",
     "vite": "^8.3.0"
   },
+  "dependencies": {
+    "swiper": "^14.4.0",
+    "qrcode": "^1.5.4"
+  },
   "imports": {
     "#lib": "./src/lib/index.js",
     "#lib/*": "./src/lib/*"
-  },
- "dependencies": {
-  "swiper": "^14.4.0",
-  "qrcode": "^1.5.4"
-}
+  }
 }
