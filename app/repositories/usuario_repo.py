@@ -23,6 +23,27 @@ class UsuarioRepository:
         conn.close()
         return filas
 
+    
+    def obtener_programas(self):
+        conn = self.db.get_connection()
+        if not conn:
+            return []
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, nombre
+            FROM programa
+            WHERE estado = TRUE
+            ORDER BY nombre ASC;
+        """)
+
+        programas = cursor.fetchall()
+        conn.close()
+
+        return programas
+
+
     def verificar_datos_registro(self, correo, documento):
         conn = self.db.get_connection()
         if not conn:
