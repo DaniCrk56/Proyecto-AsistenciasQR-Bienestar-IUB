@@ -1,20 +1,77 @@
 
-
 <script>
+    import { onMount } from 'svelte';
+    import QRCode from 'qrcode';
+
     let estudiante = {
-        nombre: 'Nombre del estudiante',
-        documento: 'Documento del estudiante',
-        programa: 'Programa académico',
-        codigo: 'IUB-EST-2026-001'
+        nombre: 'Cargando...',
+        documento: 'No registrado',
+        programa: 'No registrado',
+        codigo: 'No registrado'
     };
 
+    let qrImagen = '';
     let mensaje = '';
     let menuAbierto = false;
 
+    onMount(async () => {
+        const usuarioGuardado = localStorage.getItem('usuario');
+
+        if (usuarioGuardado) {
+            try {
+                const usuario = JSON.parse(usuarioGuardado);
+
+                estudiante = {
+                    nombre: `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim(),
+                    documento: usuario.numero_documento || 'No registrado',
+                    programa: usuario.programa || 'No registrado',
+                    codigo: usuario.id ? `IUB-EST-${usuario.id}` : 'No registrado'
+                };
+
+                if (usuario.id) {
+                    const contenidoQR = JSON.stringify({
+                        tipo: 'estudiante',
+                        id: usuario.id
+                    });
+
+                    qrImagen = await QRCode.toDataURL(contenidoQR, {
+                        width: 400,
+                        margin: 2,
+                        errorCorrectionLevel: 'H',
+                        color: {
+                            dark: '#142044',
+                            light: '#FFFFFF'
+                        }
+                    });
+                } else {
+                    mensaje = 'No se encontró el identificador del estudiante.';
+                }
+
+            } catch (error) {
+                console.error('Error generando el QR:', error);
+                mensaje = 'No fue posible generar el código QR.';
+            }
+        } else {
+            estudiante.nombre = 'No se encontró el usuario';
+            mensaje = 'Inicia sesión para consultar tu código QR.';
+        }
+    });
+
     function descargarQR() {
-        mensaje = 'La descarga del código QR estará disponible cuando conectemos el sistema con FastAPI.';
+        if (!qrImagen) {
+            mensaje = 'El código QR todavía no está disponible.';
+            return;
+        }
+
+        const enlace = document.createElement('a');
+        enlace.href = qrImagen;
+        enlace.download = `QR-${estudiante.codigo}.png`;
+        enlace.click();
+
+        mensaje = 'Tu código QR se descargó correctamente.';
     }
 </script>
+
 
 <svelte:head>
     <title>Mi código QR | Bienestar Universitario IUB</title>
@@ -144,15 +201,19 @@
                         <h3>Código personal</h3>
                     </div>
 
-                    <div class="qr-contenedor">
-                        <div class="qr-demo">
-                            <div class="qr-patron">
-                                {#each Array(441) as _, i}
-                                    <span class:activo={((i * 17 + Math.floor(i / 7) * 13 + i % 11) % 7) < 3 || [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30].includes(i)}></span>
-                                {/each}
-                            </div>
-                        </div>
-                    </div>
+                  <div class="qr-demo">
+    {#if qrImagen}
+        <img
+            src={qrImagen}
+            alt="Código QR personal del estudiante"
+            class="qr-imagen"
+        />
+    {:else}
+        <div class="qr-cargando">
+            Generando QR...
+        </div>
+    {/if}
+</div>
 
                     <div class="codigo">
                         <span>CÓDIGO DE IDENTIFICACIÓN</span>
@@ -1237,5 +1298,22 @@ footer {
 .enlace.activo::after {
     transform: scaleX(1);
 }
+.qr-imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
 
+.qr-cargando {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8992a5;
+    font-size: 12px;
+    font-weight: 900;
+    text-align: center;
+}
 </style>
