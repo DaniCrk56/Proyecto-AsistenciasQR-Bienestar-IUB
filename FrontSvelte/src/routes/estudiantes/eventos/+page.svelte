@@ -14,53 +14,7 @@
     let mensaje = '';
     let menuAbierto = false;
 
-    let actividades = [
-        {
-            nombre: 'Jornada deportiva',
-            categoria: 'Deportes',
-            fecha: '20 de noviembre de 2026',
-            hora: '8:00 a. m. - 10:00 a. m.',
-            lugar: 'Cancha universitaria',
-            descripcion: 'Participa en una jornada llena de energía, actividad física y compañerismo. Disfruta de diferentes actividades deportivas junto a la comunidad universitaria.',
-            imagen: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=900'
-        },
-        {
-            nombre: 'Festival cultural',
-            categoria: 'Cultura',
-            fecha: '25 de noviembre de 2026',
-            hora: '2:00 p. m. - 5:00 p. m.',
-            lugar: 'Auditorio principal',
-            descripcion: 'Un espacio para disfrutar del talento artístico, la música, la danza y las diferentes expresiones culturales de nuestra comunidad.',
-            imagen: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=900'
-        },
-        {
-            nombre: 'Encuentro de bienestar',
-            categoria: 'Bienestar',
-            fecha: '28 de noviembre de 2026',
-            hora: '9:00 a. m. - 12:00 p. m.',
-            lugar: 'Bloque académico',
-            descripcion: 'Un encuentro dedicado al bienestar físico y emocional, con actividades recreativas y espacios para compartir.',
-            imagen: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=900'
-        },
-        {
-            nombre: 'Taller de liderazgo',
-            categoria: 'Formación',
-            fecha: '3 de diciembre de 2026',
-            hora: '10:00 a. m. - 12:00 p. m.',
-            lugar: 'Sala de conferencias',
-            descripcion: 'Fortalece tus habilidades personales y aprende herramientas para desarrollar tu liderazgo dentro y fuera de la universidad.',
-            imagen: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=900'
-        },
-        {
-            nombre: 'Feria universitaria',
-            categoria: 'Integración',
-            fecha: '10 de diciembre de 2026',
-            hora: '8:00 a. m. - 1:00 p. m.',
-            lugar: 'Plazoleta principal',
-            descripcion: 'Comparte con estudiantes, conoce diferentes iniciativas universitarias y disfruta de una jornada de integración.',
-            imagen: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=900'
-        }
-    ];
+   let actividades = [];
 
     function inscribirse() {
         mensaje = 'La inscripción estará disponible cuando conectemos esta página con el sistema.';
