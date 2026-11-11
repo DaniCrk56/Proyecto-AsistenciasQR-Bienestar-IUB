@@ -65,6 +65,7 @@ def login(datos: DatosLogin):
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
+  
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -72,10 +73,14 @@ def login(datos: DatosLogin):
             "id": usuario["id"],
             "nombres": usuario["nombres"],
             "apellidos": usuario["apellidos"],
+            "numero_documento": usuario["numero_documento"],
+            "tipo_documento": usuario["tipo_documento"],
             "correo_institucional": usuario["correo_institucional"],
+            "programa": usuario["programa"],
             "id_rol": usuario["id_rol"]
         }
     }
+
 
 
 def validar_token(token: str = Depends(oauth2_scheme)):
