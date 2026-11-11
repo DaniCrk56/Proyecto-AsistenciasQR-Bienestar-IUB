@@ -1081,4 +1081,186 @@
             gap: 10px;
         }
     }
+
+
+.encabezado {
+    animation: entradaQRArriba .7s ease both;
+}
+
+.presentacion {
+    animation: entradaQRAbajo .8s ease both;
+}
+
+.circulo-1 {
+    animation: flotarQR 6s ease-in-out infinite;
+}
+
+.circulo-2 {
+    animation: flotarQR 5s ease-in-out infinite reverse;
+}
+
+
+.presentacion-decoracion > span {
+    animation: girarQR 5s ease-in-out infinite;
+}
+
+.tarjeta-qr {
+    animation: entradaQRAbajo .8s ease both;
+    transition: transform .3s ease, box-shadow .3s ease;
+    animation-delay: .1s;
+}
+
+
+.tarjeta-qr:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 35px rgba(20, 32, 68, .12);
+}
+
+.qr-demo {
+    animation: aparecerCodigo .9s ease both;
+    animation-delay: .3s;
+    transition: box-shadow .3s ease;
+}
+
+.qr-demo:hover {
+    box-shadow: 0 8px 25px rgba(20, 32, 68, .13);
+}
+
+
+.informacion {
+    animation: entradaQRAbajo .8s ease both;
+    animation-delay: .2s;
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.informacion:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 35px rgba(20, 32, 68, .10);
+}
+
+
+.campo {
+    transition: padding-left .25s ease, background .25s ease;
+}
+
+.campo:hover {
+    padding-left: 8px;
+}
+
+
+.avatar {
+    transition: transform .3s ease;
+}
+
+.avatar:hover {
+    transform: rotate(-8deg) scale(1.08);
+}
+
+
+.boton-descargar {
+    transition: transform .3s ease, box-shadow .3s ease, background .3s ease;
+}
+
+
+.mensaje {
+    animation: entradaQRAbajo .4s ease both;
+}
+
+
+.paso {
+    transition: transform .3s ease, box-shadow .3s ease;
+    animation: entradaQRAbajo .8s ease both;
+}
+
+.paso:nth-child(1) {
+    animation-delay: .1s;
+}
+
+.paso:nth-child(2) {
+    animation-delay: .2s;
+}
+
+.paso:nth-child(3) {
+    animation-delay: .3s;
+}
+
+.paso:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 15px 30px rgba(20, 32, 68, .10);
+}
+
+.paso-icono {
+    transition: transform .3s ease, background .3s ease;
+}
+
+.paso:hover .paso-icono {
+    transform: scale(1.12) rotate(-5deg);
+    background: #dceafa;
+}
+
+footer {
+    animation: entradaQRAbajo .8s ease both;
+}
+
+
+@keyframes entradaQRArriba {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes entradaQRAbajo {
+    from {
+        opacity: 0;
+        transform: translateY(22px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes aparecerCodigo {
+    from {
+        opacity: 0;
+        transform: scale(.88);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes flotarQR {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes girarQR {
+    0%, 100% {
+        transform: rotate(-10deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
 </style>
