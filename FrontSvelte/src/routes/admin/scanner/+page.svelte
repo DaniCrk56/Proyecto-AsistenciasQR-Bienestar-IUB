@@ -63,21 +63,6 @@
             <p>Ubica el código QR del estudiante dentro del área de escaneo.</p>
         </div>
 
-        <section class="evento">
-            <div class="evento-icono">▦</div>
-
-            <div class="evento-info">
-                <span>EVENTO SELECCIONADO</span>
-                <h2>{evento.nombre}</h2>
-                <p>{evento.fecha} · {evento.lugar}</p>
-            </div>
-
-            <div class="evento-id">
-                <span>ID DEL EVENTO</span>
-                <strong>{idEvento || 'Sin seleccionar'}</strong>
-            </div>
-        </section>
-
         <section class="scanner-contenedor">
 
             <div class="scanner-superior">
