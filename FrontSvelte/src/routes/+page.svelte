@@ -150,6 +150,13 @@
 
             </form>
 
+            <div class="registro-enlace">
+                <span>¿No tienes una cuenta?</span>
+                <a href="/registro">Regístrate aquí</a>
+            </div>
+
+            <div class="linea-inferior"></div>
+
             <div class="linea-inferior"></div>
 
             <div class="mensaje-seguridad">
@@ -555,5 +562,30 @@
             transition: none;
         }
     }
+.registro-enlace {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.registro-enlace span {
+    color: #718096;
+}
+
+.registro-enlace a {
+    color: #008cbd;
+    font-weight: 750;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.registro-enlace a:hover {
+    color: #0b8457;
+    text-decoration: underline;
+}
 </style>
 
