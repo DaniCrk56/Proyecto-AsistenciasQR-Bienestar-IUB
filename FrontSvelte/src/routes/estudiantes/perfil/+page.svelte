@@ -174,14 +174,6 @@
                                 <strong>{estudiante.programa}</strong>
                             </div>
                         </div>
-
-                        <div class="dato">
-                            <div class="dato-icono">⌑</div>
-                            <div>
-                                <small>Código estudiantil</small>
-                                <strong>{estudiante.codigo}</strong>
-                            </div>
-                        </div>
                     </div>
                 </article>
             </section>
