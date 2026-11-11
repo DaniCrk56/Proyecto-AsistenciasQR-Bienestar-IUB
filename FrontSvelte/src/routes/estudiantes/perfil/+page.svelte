@@ -1082,7 +1082,6 @@
     position: relative;
     padding-bottom: 7px;
 }
-
 .enlace::after {
     content: '';
     position: absolute;
@@ -1100,5 +1099,4 @@
 .enlace.activo::after {
     transform: scaleX(1);
 }
-
 </style>
