@@ -7,23 +7,39 @@
     let mensaje = '';
     let error = false;
 
-    async function manejarSubmit(evento) {
-        evento.preventDefault();
+   async function manejarSubmit(evento) {
+    evento.preventDefault();
 
-        mensaje = '';
-        error = false;
+    mensaje = '';
+    error = false;
 
-        try {
-            const respuesta = await iniciarSesion(correo_institucional, password);
+    try {
+        const respuesta = await iniciarSesion(
+            correo_institucional,
+            password
+        );
 
-            mensaje = '¡Inicio de sesión exitoso!';
-            console.log('Respuesta del servidor:', respuesta);
+        localStorage.setItem('token', respuesta.access_token);
+        localStorage.setItem('usuario', JSON.stringify(respuesta.usuario));
 
-        } catch (e) {
+        mensaje = '¡Inicio de sesión exitoso!';
+
+        if (respuesta.usuario.id_rol === 1) {
+            window.location.href = '/admin/admin';
+        } 
+        else if (respuesta.usuario.id_rol === 3) {
+            window.location.href = '/estudiantes/eventos';
+        } 
+        else {
             error = true;
-            mensaje = e.message;
+            mensaje = 'Tu cuenta no tiene un rol autorizado para ingresar.';
         }
+
+    } catch (e) {
+        error = true;
+        mensaje = e.message;
     }
+}
 </script>
 
 <div class="login-card">
