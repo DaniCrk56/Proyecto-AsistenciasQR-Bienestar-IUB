@@ -1,7 +1,7 @@
 
 <script>
     import { onMount } from 'svelte';
-    import { registrarEstudiante } from '#lib/services/api_autht.js';
+    import { registrarEstudiante } from '$lib/services/api_autht.js';
 
     let nombres = '';
     let apellidos = '';
@@ -9,11 +9,10 @@
     let numero_documento = '';
     let correo_institucional = '';
     let programa = '';
-    let busqueda_programa = '';
+    let programaSeleccionado = null;
     let programas = [];
     let programasFiltrados = [];
-    let listaProgramasAbierta = false;
-    let cargandoProgramas = true;
+    let mostrarProgramas = false;
 
     let password = '';
     let confirmar_password = '';
@@ -21,6 +20,7 @@
     let mensaje = '';
     let error = false;
     let cargando = false;
+    let cargandoProgramas = true;
 
     onMount(async () => {
         try {
@@ -29,35 +29,32 @@
             );
 
             if (!respuesta.ok) {
-                throw new Error('No fue posible cargar los programas académicos.');
+                throw new Error('No se pudieron cargar los programas.');
             }
 
             programas = await respuesta.json();
-            programasFiltrados = programas;
         } catch (e) {
             error = true;
-            mensaje = 'No fue posible cargar las carreras. Intenta nuevamente.';
+            mensaje = 'No fue posible cargar los programas académicos.';
         } finally {
             cargandoProgramas = false;
         }
     });
 
     function buscarProgramas() {
-        programa = '';
-
-        const busqueda = busqueda_programa.toLowerCase().trim();
+        programaSeleccionado = null;
 
         programasFiltrados = programas.filter((item) =>
-            item.nombre.toLowerCase().includes(busqueda)
+            item.nombre.toLowerCase().includes(programa.toLowerCase())
         );
 
-        listaProgramasAbierta = true;
+        mostrarProgramas = true;
     }
 
     function seleccionarPrograma(item) {
-        programa = item.id;
-        busqueda_programa = item.nombre;
-        listaProgramasAbierta = false;
+        programa = item.nombre;
+        programaSeleccionado = item.id;
+        mostrarProgramas = false;
     }
 
     async function manejarRegistro(evento) {
@@ -72,7 +69,13 @@
             return;
         }
 
-        if (!programa) {
+        if (password.length < 8) {
+            error = true;
+            mensaje = 'La contraseña debe tener mínimo 8 caracteres.';
+            return;
+        }
+
+        if (!programaSeleccionado) {
             error = true;
             mensaje = 'Selecciona un programa académico de la lista.';
             return;
@@ -87,20 +90,18 @@
         cargando = true;
 
         try {
-            const datos = {
+            await registrarEstudiante({
                 nombres: nombres.trim(),
                 apellidos: apellidos.trim(),
                 id_tipo_documento: Number(tipo_documento),
                 numero_documento: numero_documento.trim(),
                 correo_institucional: correo_institucional.trim(),
                 password: password,
-                id_programa: Number(programa)
-            };
-
-            const respuesta = await registrarEstudiante(datos);
+                id_programa: Number(programaSeleccionado)
+            });
 
             error = false;
-            mensaje = respuesta.mensaje || 'Estudiante registrado exitosamente.';
+            mensaje = '¡Cuenta creada exitosamente! Ya puedes iniciar sesión.';
 
             nombres = '';
             apellidos = '';
@@ -108,19 +109,18 @@
             numero_documento = '';
             correo_institucional = '';
             programa = '';
-            busqueda_programa = '';
+            programaSeleccionado = null;
             password = '';
             confirmar_password = '';
 
         } catch (e) {
             error = true;
-            mensaje = e.message || 'No fue posible completar el registro.';
+            mensaje = e.message || 'No fue posible registrar tu cuenta.';
         } finally {
             cargando = false;
         }
     }
 </script>
-
 
 <svelte:head>
     <title>Crear cuenta | Bienestar Universitario IUB</title>
@@ -182,7 +182,6 @@
 
                     <div class="form-group">
                         <label for="nombres">Nombres</label>
-
                         <div class="input-contenedor">
                             <span class="icono-input">👤</span>
                             <input
@@ -198,7 +197,6 @@
 
                     <div class="form-group">
                         <label for="apellidos">Apellidos</label>
-
                         <div class="input-contenedor">
                             <span class="icono-input">👤</span>
                             <input
@@ -214,7 +212,6 @@
 
                     <div class="form-group">
                         <label for="tipo_documento">Tipo de documento</label>
-
                         <div class="input-contenedor">
                             <span class="icono-input">▤</span>
                             <select
@@ -222,18 +219,17 @@
                                 bind:value={tipo_documento}
                                 required
                             >
-                            <option value="" disabled>Selecciona tu documento</option>
-<option value="1">Cédula de ciudadanía</option>
-<option value="2">Tarjeta de identidad</option>
-<option value="3">Cédula de extranjería</option>
-<option value="4">Pasaporte</option>
+                                <option value="" disabled>Selecciona tu documento</option>
+                                <option value="1">Cédula de ciudadanía</option>
+                                <option value="2">Tarjeta de identidad</option>
+                                <option value="3">Cédula de extranjería</option>
+                                <option value="4">Pasaporte</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="numero_documento">Número de documento</label>
-
                         <div class="input-contenedor">
                             <span class="icono-input">#</span>
                             <input
@@ -249,7 +245,6 @@
 
                     <div class="form-group completo">
                         <label for="correo">Correo institucional</label>
-
                         <div class="input-contenedor">
                             <span class="icono-input">✉</span>
                             <input
@@ -263,53 +258,51 @@
                         </div>
                     </div>
 
-                   
-<div class="form-group completo">
-    <label for="programa">Programa académico</label>
+                    <div class="form-group completo programa-grupo">
+                        <label for="programa">Programa académico</label>
 
-    <div class="input-contenedor">
-        <span class="icono-input">🎓</span>
+                        <div class="input-contenedor">
+                            <span class="icono-input">🎓</span>
+                            <input
+                                type="text"
+                                id="programa"
+                                bind:value={programa}
+                                oninput={buscarProgramas}
+                                onfocus={buscarProgramas}
+                                placeholder={cargandoProgramas ? 'Cargando programas...' : 'Escribe para buscar tu programa'}
+                                autocomplete="off"
+                                disabled={cargandoProgramas}
+                                required
+                            />
+                        </div>
 
-        <input
-            type="text"
-            id="programa"
-            bind:value={busqueda_programa}
-            oninput={buscarProgramas}
-            onfocus={() => listaProgramasAbierta = true}
-            placeholder={cargandoProgramas
-                ? 'Cargando programas...'
-                : 'Escribe para buscar tu carrera'}
-            autocomplete="off"
-            disabled={cargandoProgramas || cargando}
-            required
-        />
-    </div>
+                        {#if mostrarProgramas && programasFiltrados.length > 0}
+                            <div class="lista-programas">
+                                {#each programasFiltrados as item}
+                                    <button
+                                        type="button"
+                                        class="opcion-programa"
+                                        onclick={() => seleccionarPrograma(item)}
+                                    >
+                                        {item.nombre}
+                                    </button>
+                                {/each}
+                            </div>
+                        {:else if mostrarProgramas && programa.length > 0}
+                            <div class="sin-programas">
+                                No se encontraron programas con ese nombre.
+                            </div>
+                        {/if}
 
-    {#if listaProgramasAbierta && !cargandoProgramas}
-        <div class="lista-programas">
-            {#if programasFiltrados.length > 0}
-                {#each programasFiltrados as item (item.id)}
-                    <button
-                        type="button"
-                        class="opcion-programa"
-                        onclick={() => seleccionarPrograma(item)}
-                    >
-                        {item.nombre}
-                    </button>
-                {/each}
-            {:else}
-                <div class="sin-programas">
-                    No se encontraron carreras.
-                </div>
-            {/if}
-        </div>
-    {/if}
-</div>
-
+                        {#if programaSeleccionado}
+                            <div class="programa-elegido">
+                                ✓ Programa seleccionado
+                            </div>
+                        {/if}
+                    </div>
 
                     <div class="form-group">
                         <label for="password">Contraseña</label>
-
                         <div class="input-contenedor">
                             <span class="icono-input">🔒</span>
                             <input
@@ -325,7 +318,6 @@
 
                     <div class="form-group">
                         <label for="confirmar_password">Confirmar contraseña</label>
-
                         <div class="input-contenedor">
                             <span class="icono-input">🔒</span>
                             <input
@@ -341,8 +333,8 @@
 
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    Crear mi cuenta
+                <button type="submit" class="btn-submit" disabled={cargando || cargandoProgramas}>
+                    {cargando ? 'Creando cuenta...' : 'Crear mi cuenta'}
                     <span class="flecha">→</span>
                 </button>
 
@@ -614,6 +606,53 @@
         box-shadow: 0 0 0 4px rgba(0, 174, 239, 0.11);
     }
 
+    .programa-grupo {
+        position: relative;
+    }
+
+    .lista-programas {
+        position: absolute;
+        top: calc(100% - 12px);
+        left: 0;
+        right: 0;
+        max-height: 220px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #dce5ed;
+        border-radius: 10px;
+        box-shadow: 0 8px 22px rgba(15, 55, 80, 0.13);
+        z-index: 10;
+    }
+
+    .opcion-programa {
+        width: 100%;
+        padding: 11px 14px;
+        border: none;
+        background: white;
+        color: #34495e;
+        text-align: left;
+        font-family: inherit;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .opcion-programa:hover {
+        background: #eaf8ff;
+        color: #008cbd;
+    }
+
+    .sin-programas {
+        color: #bc3030;
+        font-size: 0.8rem;
+        padding: 9px 2px;
+    }
+
+    .programa-elegido {
+        color: #187b43;
+        font-size: 0.78rem;
+        margin-top: 7px;
+    }
+
     .mensaje {
         display: flex;
         align-items: center;
@@ -659,10 +698,15 @@
         transition: all 0.25s ease;
     }
 
-    .btn-submit:hover {
+    .btn-submit:hover:not(:disabled) {
         background: linear-gradient(110deg, #009bd6, #066d94);
         transform: translateY(-2px);
         box-shadow: 0 10px 22px rgba(0, 174, 239, 0.32);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
     }
 
     .btn-submit:active {
@@ -797,47 +841,4 @@
             transition: none;
         }
     }
-
-.lista-programas {
-    width: 100%;
-    max-height: 220px;
-    overflow-y: auto;
-    background: white;
-    border: 1px solid #dce5ed;
-    border-radius: 11px;
-    margin-top: 7px;
-    box-shadow: 0 8px 20px rgba(15, 55, 80, 0.10);
-    position: relative;
-    z-index: 5;
-}
-
-.opcion-programa {
-    width: 100%;
-    padding: 12px 15px;
-    border: none;
-    border-bottom: 1px solid #edf1f5;
-    background: white;
-    text-align: left;
-    color: #34495e;
-    font-size: 0.86rem;
-    cursor: pointer;
-    font-family: inherit;
-}
-
-.opcion-programa:hover {
-    background: #eaf8ff;
-    color: #008cbd;
-}
-
-.opcion-programa:last-child {
-    border-bottom: none;
-}
-
-.sin-programas {
-    padding: 14px;
-    text-align: center;
-    color: #82909d;
-    font-size: 0.85rem;
-}
-
 </style>
