@@ -1,7 +1,6 @@
+
 from datetime import datetime, timedelta
 from typing import Optional
-
-import bcrypt
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -9,7 +8,6 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from app.repositories.usuario_repo import UsuarioRepository
-
 
 SECRET_KEY = "1234"
 ALGORITHM = "HS256"
@@ -46,56 +44,17 @@ def login(datos: DatosLogin):
 
     if not usuario:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Correo o contraseña incorrectos"
+            status_code=401,
+            detail="Usuario no encontrado"
         )
 
     password_guardado = usuario.get("password_hash")
 
-    if not password_guardado:
+    if datos.password != password_guardado:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Correo o contraseña incorrectos"
+            status_code=401,
+            detail="Contraseña incorrecta"
         )
-
-    password_bytes = datos.password.encode("utf-8")
-    hash_bytes = password_guardado.encode("utf-8")
-
-    # Si ya tiene un hash bcrypt, verificamos con bcrypt.
-    if password_guardado.startswith(("$2a$", "$2b$", "$2y$")):
-        try:
-            password_correcto = bcrypt.checkpw(password_bytes, hash_bytes)
-        except ValueError:
-            password_correcto = False
-
-    # Si todavía tiene texto normal, comprobamos y migramos a bcrypt.
-    else:
-        password_correcto = datos.password == password_guardado
-
-        if password_correcto:
-            nuevo_hash = bcrypt.hashpw(
-                password_bytes,
-                bcrypt.gensalt()
-            ).decode("utf-8")
-
-            actualizado = repo.actualizar_password_hash(
-                usuario["id"],
-                nuevo_hash
-            )
-
-            if not actualizado:
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail="No se pudo actualizar la contraseña"
-                )
-
-    if not password_correcto:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Correo o contraseña incorrectos"
-        )
-
-    tiempo_expiracion = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     token = crear_token_acceso(
         data={
@@ -103,7 +62,7 @@ def login(datos: DatosLogin):
             "usuario_id": usuario["id"],
             "id_rol": usuario["id_rol"]
         },
-        expires_delta=tiempo_expiracion
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
     return {
@@ -121,18 +80,12 @@ def login(datos: DatosLogin):
 
 def validar_token(token: str = Depends(oauth2_scheme)):
     exception_auth = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Token inválido o expirado",
-        headers={"WWW-Authenticate": "Bearer"}
+        status_code=401,
+        detail="Token inválido o expirado"
     )
 
     try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
-
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
 
         if username is None:
