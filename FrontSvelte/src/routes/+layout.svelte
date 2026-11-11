@@ -8,8 +8,7 @@
         const token = localStorage.getItem('token');
         const usuario = localStorage.getItem('usuario');
 
-        // El login siempre estará disponible
-        if (ruta !== '/' && (!token || !usuario)) {
+       if (ruta !== '/' && ruta !== '/registro' && (!token || !usuario)) {
             window.location.replace('/');
         }
     });
