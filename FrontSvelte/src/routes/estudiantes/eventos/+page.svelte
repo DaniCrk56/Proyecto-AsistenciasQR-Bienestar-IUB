@@ -22,6 +22,10 @@
 
     let mostrarModal = false;
     let mensajeModal = '';
+    let enviandoInscripcion = false;
+    let inscripcionExitosa = false;
+    let usuarioId = null;
+    let codigoQrInscripcion = '';
 
     let datosEstudiante = {
         nombres: '',
@@ -113,12 +117,17 @@
 
     function abrirInscripcion() {
         mensajeModal = '';
+        usuarioId = null;
+        inscripcionExitosa = false;
+        codigoQrInscripcion = '';
 
         const usuarioGuardado = localStorage.getItem('usuario');
 
         if (usuarioGuardado) {
             try {
                 const usuario = JSON.parse(usuarioGuardado);
+
+                usuarioId = usuario.id || usuario.id_usuario || null;
 
                 datosEstudiante = {
                     nombres: usuario.nombres || '',
@@ -137,12 +146,77 @@
     }
 
     function cerrarModal() {
+        if (enviandoInscripcion) {
+            return;
+        }
+
         mostrarModal = false;
         mensajeModal = '';
     }
 
-    function confirmarInscripcion() {
-        mensajeModal = 'La inscripción estará disponible cuando conectemos esta ventana con el sistema.';
+    async function confirmarInscripcion() {
+        if (enviandoInscripcion || inscripcionExitosa) {
+            return;
+        }
+
+        if (!usuarioId) {
+            mensajeModal = 'No pudimos identificar tu usuario. Cierra sesión e inicia nuevamente.';
+            return;
+        }
+
+        const actividad = actividades[actividadSeleccionada];
+
+        if (!actividad) {
+            mensajeModal = 'No se pudo identificar el evento seleccionado.';
+            return;
+        }
+
+        enviandoInscripcion = true;
+        mensajeModal = 'Registrando tu inscripción...';
+
+        try {
+            const respuesta = await fetch(`${URL_BASE}/inscripciones/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuario_id: usuarioId,
+                    actividad_id: actividad.id,
+                    estado: true
+                })
+            });
+
+            let resultado = {};
+
+            try {
+                resultado = await respuesta.json();
+            } catch (error) {
+                resultado = {};
+            }
+
+            if (respuesta.status === 409) {
+                mensajeModal = 'Ya estás inscrito en este evento.';
+                return;
+            }
+
+            if (!respuesta.ok) {
+                mensajeModal = resultado.detail || 'No se pudo completar la inscripción. Inténtalo nuevamente.';
+                return;
+            }
+
+            inscripcionExitosa = true;
+            codigoQrInscripcion = resultado.codigo_qr || '';
+
+            mensajeModal = '¡Tu inscripción se realizó correctamente! Ya estás registrado en este evento.';
+
+        } catch (error) {
+            console.error('Error al registrar inscripción:', error);
+            mensajeModal = 'No fue posible conectar con el servidor. Inténtalo nuevamente.';
+        } finally {
+            enviandoInscripcion = false;
+        }
     }
 
     onMount(() => {
@@ -582,9 +656,16 @@
                     <button
                         class="boton-confirmar"
                         onclick={confirmarInscripcion}
+                        disabled={enviandoInscripcion || inscripcionExitosa}
                     >
-                        Confirmar inscripción
-                        <span>→</span>
+                        {#if enviandoInscripcion}
+                            Registrando...
+                        {:else if inscripcionExitosa}
+                            Inscripción realizada
+                        {:else}
+                            Confirmar inscripción
+                            <span>→</span>
+                        {/if}
                     </button>
                 </div>
             </section>
@@ -1366,6 +1447,12 @@
     .boton-confirmar:hover {
         background: #00aef0;
         transform: translateY(-2px);
+    }
+
+    .boton-confirmar:disabled {
+        opacity: .7;
+        cursor: not-allowed;
+        transform: none;
     }
 
     .mensaje-modal {
