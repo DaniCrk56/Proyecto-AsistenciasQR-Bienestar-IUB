@@ -6,6 +6,10 @@
     let eventos = [];
     let cargandoEventos = false;
     let mensajeEventos = '';
+let asistencias = [];
+let cargandoAsistencias = false;
+let mensajeAsistencias = '';
+let idEventoSeleccionado = '';
 
     let usuario = {
         nombres: '',
@@ -63,17 +67,17 @@
         cargarUsuario();
     });
 
-    function cambiarSeccion(seccion) {
-        seccionActual = seccion;
+   function cambiarSeccion(seccion) {
+    seccionActual = seccion;
 
-        if (seccion === 'crear') {
-            cargarOpciones();
-        }
-
-        if (seccion === 'eventos' || seccion === 'scanner') {
-            cargarEventos();
-        }
+    if (seccion === 'crear') {
+        cargarOpciones();
     }
+
+    if (seccion === 'eventos' || seccion === 'scanner' || seccion === 'asistencia') {
+        cargarEventos();
+    }
+}
 
     function cerrarSesion() {
         localStorage.removeItem('usuario');
@@ -123,6 +127,49 @@
 
         cargandoEventos = false;
     }
+
+async function cargarAsistencias(idEvento) {
+
+    if (!idEvento) {
+        asistencias = [];
+        mensajeAsistencias = '';
+        return;
+    }
+
+    cargandoAsistencias = true;
+    mensajeAsistencias = '';
+    asistencias = [];
+
+    try {
+
+        const token = localStorage.getItem('token');
+
+        const respuesta = await fetch(
+            URL_BASE + '/asistencias/evento/' + idEvento,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            }
+        );
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.detail || 'No se pudieron consultar las asistencias.');
+        }
+
+        asistencias = datos;
+
+    } catch (error) {
+
+        mensajeAsistencias = error.message || 'Error al consultar las asistencias.';
+
+    }
+
+    cargandoAsistencias = false;
+}
 
     async function crearActividad(evento) {
         evento.preventDefault();
@@ -586,15 +633,124 @@
 
             </section>
 
-        {:else if seccionActual === 'asistencia'}
+     
+{:else if seccionActual === 'asistencia'}
+
+    <section class="seccion">
+
+        <div class="encabezado-seccion">
+            <h2>Gestión de asistencias</h2>
+            <p>Consulta los estudiantes que asistieron a cada evento universitario.</p>
+        </div>
+
+        <div class="formulario-evento">
+
+            <label>Seleccionar evento</label>
+
+            <select
+                bind:value={idEventoSeleccionado}
+                onchange={() => cargarAsistencias(Number(idEventoSeleccionado))}
+            >
+                <option value="">Selecciona un evento</option>
+
+                {#each eventos as evento}
+                    <option value={evento.id}>
+                        {evento.nombre}
+                    </option>
+                {/each}
+
+            </select>
+
+        </div>
+
+        {#if cargandoEventos}
+
+            <p>Cargando eventos...</p>
+
+        {:else if mensajeEventos}
+
+            <p class="error-mensaje">{mensajeEventos}</p>
+
+        {:else if eventos.length === 0}
 
             <section class="seccion-vacia">
-                <div class="vacio-icono">☷</div>
-                <h2>Gestión de asistencias</h2>
-                <p>Este apartado estará disponible cuando implementemos la consulta de asistencias.</p>
+                <div class="vacio-icono">▦</div>
+                <h2>No hay eventos registrados</h2>
+                <p>Primero debes crear un evento.</p>
+            </section>
+
+        {:else if idEventoSeleccionado}
+
+            <section class="seccion">
+
+                <div class="encabezado-seccion">
+                    <h2>Estudiantes asistentes</h2>
+                    <p>Total de asistencias: {asistencias.length}</p>
+                </div>
+
+                {#if cargandoAsistencias}
+
+                    <p>Consultando asistencias...</p>
+
+                {:else if mensajeAsistencias}
+
+                    <p class="error-mensaje">{mensajeAsistencias}</p>
+
+                {:else if asistencias.length === 0}
+
+                    <section class="seccion-vacia">
+                        <div class="vacio-icono">☷</div>
+                        <h2>Sin asistencias registradas</h2>
+                        <p>Todavía no hay estudiantes con asistencia registrada en este evento.</p>
+                    </section>
+
+                {:else}
+
+                    <div class="tabla-asistencias">
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Documento</th>
+                                    <th>Fecha y hora</th>
+                                    <th>Método</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {#each asistencias as asistencia}
+                                    <tr>
+                                        <td>
+                                            {asistencia.nombres} {asistencia.apellidos}
+                                        </td>
+
+                                        <td>{asistencia.numero_documento}</td>
+
+                                        <td>
+                                            {new Date(asistencia.fecha_asistencia).toLocaleString('es-CO')}
+                                        </td>
+
+                                        <td>
+                                            <span class="metodo-qr">
+                                                {asistencia.metodo}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                {/if}
+
             </section>
 
         {/if}
+
+    </section>
+
 
     </main>
 </div>
@@ -1262,4 +1418,46 @@
             grid-template-columns: 1fr;
         }
     }
+
+.tabla-asistencias {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    border-radius: 15px;
+    margin-top: 20px;
+    box-shadow: 0 5px 20px #15264a08;
+}
+
+.tabla-asistencias table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 650px;
+}
+
+.tabla-asistencias th,
+.tabla-asistencias td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #edf0f5;
+    font-size: 12px;
+}
+
+.tabla-asistencias th {
+    background: #f5f8fc;
+    color: #34415f;
+    font-weight: 1000;
+}
+
+.tabla-asistencias td {
+    color: #66738a;
+}
+
+.metodo-qr {
+    background: #e2f8ed;
+    color: #159a65;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 1000;
+}
 </style>
