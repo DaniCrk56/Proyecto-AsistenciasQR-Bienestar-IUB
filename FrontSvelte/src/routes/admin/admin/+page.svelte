@@ -39,8 +39,13 @@ let nuevaActividad = {
         { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
     ];
 
-    function cambiarSeccion(seccion) {
-        seccionActual = seccion;
+function cambiarSeccion(seccion) {
+    seccionActual = seccion;
+
+    if (seccion === 'crear') {
+        cargarOpciones();
+    }
+}
 
 function cerrarSesion() {
     localStorage.removeItem('usuario');
