@@ -12,6 +12,13 @@ def listar_inscripciones():
     return repo.obtener_todos()
 
 
+@router.get("/estudiante/{usuario_id}")
+def listar_inscripciones_estudiante(usuario_id: int):
+    inscripciones = repo.obtener_por_estudiante(usuario_id)
+
+    return inscripciones
+
+
 @router.get("/{inscripcion_id}")
 def obtener_inscripcion(inscripcion_id: int):
     inscripcion = repo.obtener_por_id(inscripcion_id)
