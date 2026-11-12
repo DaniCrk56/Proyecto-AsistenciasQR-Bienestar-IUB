@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from app.models.asistencia import Asistencia
 from app.repositories.asistencia_repo import AsistenciaRepository
-from app.api.ruta_auth import validar_administrador
+from app.api.rutas_auth import validar_administrador
 
 router = APIRouter(prefix="/asistencias", tags=["Gestión de Asistencias"])
 repo = AsistenciaRepository()
