@@ -5,12 +5,12 @@
     let idEvento = '';
     let mostrarMensaje = false;
 
-    // Información temporal de demostración
-    let evento = {
-        nombre: 'Jornada deportiva',
-        fecha: '20 de noviembre de 2026',
-        lugar: 'Cancha universitaria'
-    };
+    
+    let evento = let eventos = [];
+function cerrarSesion() {
+    localStorage.removeItem('usuario');
+    window.location.href = '/';
+}
 
     onMount(() => {
         const parametros = new URLSearchParams(window.location.search);
@@ -49,10 +49,10 @@
             </div>
         </div>
 
-        <div class="estado">
-            <span></span>
-            ESCÁNER QR
-        </div>
+        <button class="cerrar" onclick={cerrarSesion}>
+    <span class="icono">↪</span>
+    Cerrar sesión
+</button>
     </header>
 
     <main class="contenido">
@@ -634,4 +634,39 @@
             min-height: 350px;
         }
     }
+.cerrar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 15px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cerrar::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    bottom: 5px;
+    width: 0;
+    height: 2px;
+    background: #0785b6;
+    transition: width 0.3s ease;
+}
+
+.cerrar:hover::after {
+    width: calc(100% - 30px);
+}
+
+.cerrar:hover {
+    opacity: 0.8;
+}
 </style>
