@@ -190,13 +190,16 @@ async function crearActividad(evento) {
             <div class="separador"></div>
 
 
-            <div class="usuario">
-                <div class="avatar">AD</div>
-                <div>
-                    <strong>Administrador</strong>
-                    <span>Panel administrativo</span>
-                </div>
-            </div>
+           <div class="usuario">
+    <div class="avatar">
+        {usuario.nombres ? usuario.nombres.charAt(0).toUpperCase() : 'A'}
+    </div>
+
+    <div>
+        <strong>{usuario.nombres || 'Administrador'} {usuario.apellidos || ''}</strong>
+        <span>Panel administrativo</span>
+    </div>
+</div>
         </div>
     </aside>
 
