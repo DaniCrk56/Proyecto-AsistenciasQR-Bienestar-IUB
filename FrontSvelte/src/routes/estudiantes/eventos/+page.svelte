@@ -84,17 +84,20 @@
         return partes[2] + '/' + partes[1] + '/' + partes[0];
     }
 
-    function seleccionarActividad(indice) {
+    async function seleccionarActividad(indice) {
         actividadSeleccionada = indice;
         mensaje = '';
 
         if (swiper) {
-            if (swiper.params.loop) {
-                swiper.slideToLoop(indice);
-            } else {
-                swiper.slideTo(indice);
-            }
+            swiper.slideTo(indice);
         }
+
+        await tick();
+
+        document.querySelector('#detalle-evento')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
     }
 
     function inscribirse() {
@@ -120,8 +123,7 @@
                 slidesPerView: 5,
                 slidesPerGroup: 1,
 
-                loop: actividades.length >= 6,
-                loopAdditionalSlides: 5,
+                loop: false,
                 speed: 650,
 
                 coverflowEffect: {
@@ -190,10 +192,8 @@
 
                 on: {
                     slideChange: function () {
-                        if (actividades.length > 0) {
-                            actividadSeleccionada = this.realIndex % actividades.length;
-                            mensaje = '';
-                        }
+                        actividadSeleccionada = this.activeIndex;
+                        mensaje = '';
                     }
                 }
             });
@@ -208,8 +208,6 @@
         };
     });
 </script>
-
-
 
 <svelte:head>
     <title>Eventos | Bienestar Universitario</title>
@@ -333,120 +331,126 @@
                 </button>
             </div>
         </div>
-{#if cargando}
-    <div class="detalle-evento">
-        <div class="detalle-texto">
-            <h2>Cargando eventos...</h2>
-            <p class="descripcion">
-                Estamos consultando las actividades de Bienestar Universitario.
-            </p>
-        </div>
-    </div>
-{:else if errorCarga}
-    <div class="detalle-evento">
-        <div class="detalle-texto">
-            <h2>No se pudieron cargar los eventos</h2>
-            <p class="descripcion">{errorCarga}</p>
-        </div>
-    </div>
-{/if}
-        <div class="carrusel-contenedor">
-            <div class="swiper eventos-swiper">
-                <div class="swiper-wrapper">
-                    {#each actividades as actividad, i}
-                        <div class="swiper-slide">
-                            <div class="tarjeta-evento">
-                                <img src={actividad.imagen} alt={actividad.nombre} />
 
-                                <div class="capa-tarjeta">
-                                    <span class="categoria">{actividad.categoria}</span>
-                                    <h3>{actividad.nombre}</h3>
-                                    <button
-    class="ver-evento"
-    onclick={() => seleccionarActividad(i)}
->
-    Ver evento →
-</button>
+        {#if cargando}
+            <div class="detalle-evento">
+                <div class="detalle-texto">
+                    <h2>Cargando eventos...</h2>
+                    <p class="descripcion">
+                        Estamos consultando las actividades de Bienestar Universitario.
+                    </p>
+                </div>
+            </div>
+        {:else if errorCarga}
+            <div class="detalle-evento">
+                <div class="detalle-texto">
+                    <h2>No se pudieron cargar los eventos</h2>
+                    <p class="descripcion">{errorCarga}</p>
+                </div>
+            </div>
+        {:else if actividades.length > 0}
+
+            <div class="carrusel-contenedor">
+                <div class="swiper eventos-swiper">
+                    <div class="swiper-wrapper">
+                        {#each actividades as actividad, i}
+                            <div class="swiper-slide">
+                                <div class="tarjeta-evento">
+                                    <img src={actividad.imagen} alt={actividad.nombre} />
+
+                                    <div class="capa-tarjeta">
+                                        <span class="categoria">{actividad.categoria}</span>
+                                        <h3>{actividad.nombre}</h3>
+
+                                        <button
+                                            class="ver-evento"
+                                            onclick={() => seleccionarActividad(i)}
+                                        >
+                                            Ver evento →
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+
+                <div class="paginacion-eventos"></div>
+            </div>
+
+            {#if actividades[actividadSeleccionada]}
+                <section id="detalle-evento" class="detalle-evento">
+                    <div class="detalle-texto">
+                        <span class="subtitulo">CONOCE MÁS</span>
+
+                        <h2>{actividades[actividadSeleccionada].nombre}</h2>
+
+                        <p class="descripcion">
+                            {actividades[actividadSeleccionada].descripcion}
+                        </p>
+
+                        <div class="informacion-evento">
+                            <div class="dato-evento">
+                                <span class="dato-icono">▣</span>
+                                <div>
+                                    <small>Fecha</small>
+                                    <strong>{actividades[actividadSeleccionada].fecha}</strong>
+                                </div>
+                            </div>
+
+                            <div class="dato-evento">
+                                <span class="dato-icono">◷</span>
+                                <div>
+                                    <small>Horario</small>
+                                    <strong>{actividades[actividadSeleccionada].hora}</strong>
+                                </div>
+                            </div>
+
+                            <div class="dato-evento">
+                                <span class="dato-icono">⌖</span>
+                                <div>
+                                    <small>Lugar</small>
+                                    <strong>{actividades[actividadSeleccionada].lugar}</strong>
                                 </div>
                             </div>
                         </div>
-                    {/each}
-                </div>
-            </div>
 
-            <div class="paginacion-eventos"></div>
-        </div>
+                        <button class="boton-inscripcion" onclick={inscribirse}>
+                            Inscribirme al evento
+                            <span>→</span>
+                        </button>
 
-      {#if actividades.length > 0 && actividades[actividadSeleccionada]}
-        <section class="detalle-evento">
-            <div class="detalle-texto">
-                <span class="subtitulo">CONOCE MÁS</span>
-
-                <h2>{actividades[actividadSeleccionada].nombre}</h2>
-
-                <p class="descripcion">
-                    {actividades[actividadSeleccionada].descripcion}
-                </p>
-
-                <div class="informacion-evento">
-                    <div class="dato-evento">
-                        <span class="dato-icono">▣</span>
-                        <div>
-                            <small>Fecha</small>
-                            <strong>{actividades[actividadSeleccionada].fecha}</strong>
-                        </div>
+                        {#if mensaje}
+                            <p class="mensaje">{mensaje}</p>
+                        {/if}
                     </div>
 
-                    <div class="dato-evento">
-                        <span class="dato-icono">◷</span>
-                        <div>
-                            <small>Horario</small>
-                            <strong>{actividades[actividadSeleccionada].hora}</strong>
+                    <div class="detalle-imagen">
+                        <img
+                            src={actividades[actividadSeleccionada].imagen}
+                            alt={actividades[actividadSeleccionada].nombre}
+                        />
+
+                        <div class="detalle-etiqueta">
+                            <span>BIENESTAR</span>
+                            <strong>UNIVERSITARIO</strong>
                         </div>
                     </div>
+                </section>
+            {/if}
 
-                    <div class="dato-evento">
-                        <span class="dato-icono">⌖</span>
-                        <div>
-                            <small>Lugar</small>
-                            <strong>{actividades[actividadSeleccionada].lugar}</strong>
-                        </div>
-                    </div>
+        {:else}
+            <section class="detalle-evento">
+                <div class="detalle-texto">
+                    <span class="subtitulo">EVENTOS</span>
+                    <h2>No hay eventos disponibles</h2>
+                    <p class="descripcion">
+                        Próximamente encontrarás aquí las actividades universitarias disponibles.
+                    </p>
                 </div>
+            </section>
+        {/if}
 
-                <button class="boton-inscripcion" onclick={inscribirse}>
-                    Inscribirme al evento
-                    <span>→</span>
-                </button>
-
-                {#if mensaje}
-                    <p class="mensaje">{mensaje}</p>
-                {/if}
-            </div>
-
-            <div class="detalle-imagen">
-                <img
-                    src={actividades[actividadSeleccionada].imagen}
-                    alt={actividades[actividadSeleccionada].nombre}
-                />
-
-                <div class="detalle-etiqueta">
-                    <span>BIENESTAR</span>
-                    <strong>UNIVERSITARIO</strong>
-                </div>
-            </div>
-        </section>
-{:else}
-    <section class="detalle-evento">
-        <div class="detalle-texto">
-            <span class="subtitulo">EVENTOS</span>
-            <h2>No hay eventos disponibles</h2>
-            <p class="descripcion">
-                Próximamente encontrarás aquí las actividades universitarias disponibles.
-            </p>
-        </div>
-    </section>
-{/if}
     </main>
 
     <!-- PIE DE PÁGINA -->
@@ -594,20 +598,19 @@
 
     /* PRESENTACIÓN */
 
-
-.presentacion {
-    width: 92%;
-    min-height: 355px;
-    margin: 28px auto 0;
-    padding: 65px 8%;
-    background: linear-gradient(115deg, #111c3b, #1d4d8c);
-    border-radius: 23px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    box-shadow: 0 12px 30px rgba(20, 32, 68, .12);
-}
+    .presentacion {
+        width: 92%;
+        min-height: 355px;
+        margin: 28px auto 0;
+        padding: 65px 8%;
+        background: linear-gradient(115deg, #111c3b, #1d4d8c);
+        border-radius: 23px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(20, 32, 68, .12);
+    }
 
     .presentacion-contenido {
         position: relative;
@@ -860,9 +863,27 @@
     }
 
     .ver-evento {
-        font-size: 14px;
-        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        padding: 9px 16px;
+        margin-top: 5px;
+        border: 2px solid rgba(255, 255, 255, .8);
+        border-radius: 8px;
+        background: rgba(20, 32, 68, .65);
         color: #f5ca24;
+        font-family: 'Nunito', sans-serif;
+        font-size: 14px;
+        font-weight: 1000;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+    .ver-evento:hover {
+        background: #f5ca24;
+        color: #142044;
+        border-color: #f5ca24;
+        transform: translateX(5px);
     }
 
     .paginacion-eventos {
@@ -1187,14 +1208,13 @@
             font-size: 19px;
         }
 
-       
-.presentacion {
-    width: 94%;
-    min-height: 330px;
-    margin: 18px auto 0;
-    padding: 45px 7%;
-    border-radius: 18px;
-}
+        .presentacion {
+            width: 94%;
+            min-height: 330px;
+            margin: 18px auto 0;
+            padding: 45px 7%;
+            border-radius: 18px;
+        }
 
         .presentacion-contenido {
             max-width: 100%;
@@ -1462,187 +1482,154 @@
         }
     }
 
+    /* ANIMACIONES */
 
-.encabezado {
-    animation: aparecerArriba .8s ease both;
-}
-
-
-.presentacion-contenido {
-    animation: aparecerAbajo 1s ease both;
-}
-
-
-.circulo-uno {
-    animation: flotar 7s ease-in-out infinite;
-}
-
-.circulo-dos {
-    animation: flotar 5s ease-in-out infinite reverse;
-}
-
-.figura-icono {
-    animation: girarSuave 8s linear infinite;
-}
-
-
-.titulo-seccion {
-    animation: aparecerAbajo .9s ease both;
-}
-
-
-.tarjeta-evento {
-    transition: transform .4s ease, box-shadow .4s ease;
-}
-
-.tarjeta-evento:hover {
-    transform: translateY(-9px);
-    box-shadow: 0 20px 40px rgba(15, 32, 65, .25);
-}
-
-
-.tarjeta-evento img {
-    transition: transform .6s ease;
-}
-
-.tarjeta-evento:hover img {
-    transform: scale(1.09);
-}
-
-
-.detalle-evento {
-    animation: aparecerAbajo 1s ease both;
-    transition: box-shadow .3s ease;
-}
-
-.detalle-evento:hover {
-    box-shadow: 0 18px 45px rgba(20, 32, 68, .12);
-}
-
-
-.detalle-imagen img {
-    transition: transform .6s ease;
-}
-
-.detalle-imagen:hover img {
-    transform: scale(1.06);
-}
-
-/* Botones */
-.boton-inscripcion,
-.boton-descubrir,
-.boton-carrusel {
-    transition: all .3s ease;
-}
-
-.boton-inscripcion:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 9px 20px rgba(0, 174, 240, .25);
-}
-
-
-.enlace {
-    position: relative;
-}
-
-.enlace::after {
-    content: "";
-    position: absolute;
-    bottom: -7px;
-    left: 0;
-    width: 0;
-    height: 3px;
-    border-radius: 5px;
-    background: #f5ca24;
-    transition: width .3s ease;
-}
-
-.enlace:hover::after,
-.enlace.activo::after {
-    width: 100%;
-}
-
-
-.pie-pagina {
-    animation: aparecerAbajo 1s ease both;
-}
-
-
-@keyframes aparecerArriba {
-    from {
-        opacity: 0;
-        transform: translateY(-25px);
+    .encabezado {
+        animation: aparecerArriba .8s ease both;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes aparecerAbajo {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
+    .presentacion-contenido {
+        animation: aparecerAbajo 1s ease both;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes flotar {
-    0%, 100% {
-        transform: translateY(0);
+    .circulo-uno {
+        animation: flotar 7s ease-in-out infinite;
     }
 
-    50% {
-        transform: translateY(-18px);
-    }
-}
-
-@keyframes girarSuave {
-    from {
-        transform: rotate(0deg);
+    .circulo-dos {
+        animation: flotar 5s ease-in-out infinite reverse;
     }
 
-    to {
-        transform: rotate(360deg);
+    .figura-icono {
+        animation: girarSuave 8s linear infinite;
     }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
+    .titulo-seccion {
+        animation: aparecerAbajo .9s ease both;
     }
-}
-.ver-evento {
-    display: inline-flex;
-    align-items: center;
-    width: fit-content;
-    padding: 9px 16px;
-    margin-top: 5px;
-    border: 2px solid rgba(255, 255, 255, .8);
-    border-radius: 8px;
-    background: rgba(20, 32, 68, .65);
-    color: #f5ca24;
-    font-family: 'Nunito', sans-serif;
-    font-size: 14px;
-    font-weight: 1000;
-    cursor: pointer;
-    transition: .25s ease;
-}
 
-.ver-evento:hover {
-    background: #f5ca24;
-    color: #142044;
-    border-color: #f5ca24;
-    transform: translateX(5px);
-}
+    .tarjeta-evento {
+        transition: transform .4s ease, box-shadow .4s ease;
+    }
+
+    .tarjeta-evento:hover {
+        transform: translateY(-9px);
+        box-shadow: 0 20px 40px rgba(15, 32, 65, .25);
+    }
+
+    .tarjeta-evento img {
+        transition: transform .6s ease;
+    }
+
+    .tarjeta-evento:hover img {
+        transform: scale(1.09);
+    }
+
+    .detalle-evento {
+        animation: aparecerAbajo 1s ease both;
+        transition: box-shadow .3s ease;
+    }
+
+    .detalle-evento:hover {
+        box-shadow: 0 18px 45px rgba(20, 32, 68, .12);
+    }
+
+    .detalle-imagen img {
+        transition: transform .6s ease;
+    }
+
+    .detalle-imagen:hover img {
+        transform: scale(1.06);
+    }
+
+    .boton-inscripcion,
+    .boton-descubrir,
+    .boton-carrusel {
+        transition: all .3s ease;
+    }
+
+    .boton-inscripcion:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 9px 20px rgba(0, 174, 240, .25);
+    }
+
+    .enlace {
+        position: relative;
+    }
+
+    .enlace::after {
+        content: "";
+        position: absolute;
+        bottom: -7px;
+        left: 0;
+        width: 0;
+        height: 3px;
+        border-radius: 5px;
+        background: #f5ca24;
+        transition: width .3s ease;
+    }
+
+    .enlace:hover::after,
+    .enlace.activo::after {
+        width: 100%;
+    }
+
+    .pie-pagina {
+        animation: aparecerAbajo 1s ease both;
+    }
+
+    @keyframes aparecerArriba {
+        from {
+            opacity: 0;
+            transform: translateY(-25px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes aparecerAbajo {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes flotar {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-18px);
+        }
+    }
+
+    @keyframes girarSuave {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: .01ms !important;
+        }
+    }
 </style>
