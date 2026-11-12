@@ -20,6 +20,17 @@
     let cargando = true;
     let errorCarga = '';
 
+    let mostrarModal = false;
+    let mensajeModal = '';
+
+    let datosEstudiante = {
+        nombres: '',
+        apellidos: '',
+        numero_documento: '',
+        correo_institucional: '',
+        programa: ''
+    };
+
     async function cargarActividades() {
         cargando = true;
         errorCarga = '';
@@ -100,8 +111,38 @@
         });
     }
 
-    function inscribirse() {
-        mensaje = 'La inscripción estará disponible cuando conectemos esta página con el sistema.';
+    function abrirInscripcion() {
+        mensajeModal = '';
+
+        const usuarioGuardado = localStorage.getItem('usuario');
+
+        if (usuarioGuardado) {
+            try {
+                const usuario = JSON.parse(usuarioGuardado);
+
+                datosEstudiante = {
+                    nombres: usuario.nombres || '',
+                    apellidos: usuario.apellidos || '',
+                    numero_documento: usuario.numero_documento || '',
+                    correo_institucional: usuario.correo_institucional || '',
+                    programa: usuario.programa || ''
+                };
+
+            } catch (error) {
+                console.error('Error cargando los datos del estudiante:', error);
+            }
+        }
+
+        mostrarModal = true;
+    }
+
+    function cerrarModal() {
+        mostrarModal = false;
+        mensajeModal = '';
+    }
+
+    function confirmarInscripcion() {
+        mensajeModal = 'La inscripción estará disponible cuando conectemos esta ventana con el sistema.';
     }
 
     onMount(() => {
@@ -415,7 +456,7 @@
                             </div>
                         </div>
 
-                        <button class="boton-inscripcion" onclick={inscribirse}>
+                        <button class="boton-inscripcion" onclick={abrirInscripcion}>
                             Inscribirme al evento
                             <span>→</span>
                         </button>
@@ -452,6 +493,103 @@
         {/if}
 
     </main>
+
+    <!-- VENTANA DE INSCRIPCIÓN -->
+    {#if mostrarModal}
+        <div class="modal-fondo">
+            <section
+                class="modal-inscripcion"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="titulo-modal"
+            >
+                <div class="modal-encabezado">
+                    <div>
+                        <span class="subtitulo">BIENESTAR UNIVERSITARIO</span>
+                        <h2 id="titulo-modal">Inscripción al evento</h2>
+                    </div>
+
+                    <button
+                        class="cerrar-modal"
+                        onclick={cerrarModal}
+                        aria-label="Cerrar ventana"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="modal-evento">
+                    <span class="modal-etiqueta">EVENTO SELECCIONADO</span>
+
+                    <h3>{actividades[actividadSeleccionada]?.nombre}</h3>
+
+                    <p>
+                        <strong>Fecha:</strong>
+                        {actividades[actividadSeleccionada]?.fecha}
+                    </p>
+
+                    <p>
+                        <strong>Horario:</strong>
+                        {actividades[actividadSeleccionada]?.hora}
+                    </p>
+
+                    <p>
+                        <strong>Lugar:</strong>
+                        {actividades[actividadSeleccionada]?.lugar}
+                    </p>
+                </div>
+
+                <div class="modal-estudiante">
+                    <h3>Datos del estudiante</h3>
+
+                    <div class="campos-estudiante">
+                        <div class="campo-modal">
+                            <label>Nombres</label>
+                            <input value={datosEstudiante.nombres} readonly />
+                        </div>
+
+                        <div class="campo-modal">
+                            <label>Apellidos</label>
+                            <input value={datosEstudiante.apellidos} readonly />
+                        </div>
+
+                        <div class="campo-modal">
+                            <label>Número de documento</label>
+                            <input value={datosEstudiante.numero_documento} readonly />
+                        </div>
+
+                        <div class="campo-modal">
+                            <label>Correo institucional</label>
+                            <input value={datosEstudiante.correo_institucional} readonly />
+                        </div>
+
+                        <div class="campo-modal campo-completo">
+                            <label>Programa académico</label>
+                            <input value={datosEstudiante.programa} readonly />
+                        </div>
+                    </div>
+                </div>
+
+                {#if mensajeModal}
+                    <p class="mensaje-modal">{mensajeModal}</p>
+                {/if}
+
+                <div class="modal-acciones">
+                    <button class="boton-cancelar" onclick={cerrarModal}>
+                        Cancelar
+                    </button>
+
+                    <button
+                        class="boton-confirmar"
+                        onclick={confirmarInscripcion}
+                    >
+                        Confirmar inscripción
+                        <span>→</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+    {/if}
 
     <!-- PIE DE PÁGINA -->
     <footer class="pie-pagina">
@@ -799,26 +937,18 @@
         overflow: visible;
     }
 
-  .eventos-swiper .swiper-slide {
-    height: 350px;
-    border-radius: 18px;
-    overflow: hidden;
-    opacity: 1;
-    transition: transform .35s ease;
-    position: relative;
-}
+    .eventos-swiper .swiper-slide {
+        height: 350px;
+        border-radius: 18px;
+        overflow: hidden;
+        opacity: 1;
+        transition: transform .35s ease;
+        position: relative;
+    }
 
-/* Permite que la tarjeta sobre la que está el mouse
-   quede por encima de las demás */
-:global(.eventos-swiper .swiper-slide:hover) {
-    z-index: 100 !important;
-}
-
-.ver-evento {
-    position: relative;
-    z-index: 101;
-    pointer-events: auto;
-}
+    :global(.eventos-swiper .swiper-slide-active) {
+        z-index: 2;
+    }
 
     .tarjeta-evento {
         width: 100%;
@@ -1056,6 +1186,218 @@
     .detalle-etiqueta span {
         color: #f5ca24;
         letter-spacing: 2px;
+    }
+
+    /* VENTANA DE INSCRIPCIÓN */
+
+    .modal-fondo {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(8, 17, 40, .75);
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-y: auto;
+        animation: aparecerModal .25s ease;
+    }
+
+    .modal-inscripcion {
+        width: 100%;
+        max-width: 650px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+        animation: subirModal .3s ease;
+    }
+
+    .modal-encabezado {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .modal-encabezado h2 {
+        color: #142044;
+        font-size: 27px;
+        font-weight: 1000;
+        margin: 7px 0 0;
+    }
+
+    .cerrar-modal {
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 50%;
+        background: #edf1f7;
+        color: #142044;
+        font-size: 18px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: .2s;
+        flex-shrink: 0;
+    }
+
+    .cerrar-modal:hover {
+        background: #f5ca24;
+        transform: rotate(90deg);
+    }
+
+    .modal-evento {
+        padding: 20px;
+        background: #142044;
+        border-radius: 14px;
+        color: white;
+        margin-bottom: 25px;
+    }
+
+    .modal-etiqueta {
+        color: #f5ca24;
+        font-size: 11px;
+        font-weight: 1000;
+        letter-spacing: 1.5px;
+    }
+
+    .modal-evento h3 {
+        font-size: 22px;
+        font-weight: 1000;
+        margin: 8px 0 15px;
+    }
+
+    .modal-evento p {
+        color: #e0e8f5;
+        font-size: 14px;
+        margin: 7px 0;
+    }
+
+    .modal-evento strong {
+        color: #f5ca24;
+    }
+
+    .modal-estudiante h3 {
+        color: #142044;
+        font-size: 19px;
+        font-weight: 1000;
+        margin: 0 0 17px;
+    }
+
+    .campos-estudiante {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .campo-modal {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-width: 0;
+    }
+
+    .campo-completo {
+        grid-column: 1 / -1;
+    }
+
+    .campo-modal label {
+        color: #69758c;
+        font-size: 12px;
+        font-weight: 1000;
+    }
+
+    .campo-modal input {
+        width: 100%;
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid #dce3ee;
+        border-radius: 8px;
+        background: #f5f7fc;
+        color: #142044;
+        font-family: 'Nunito', sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        outline: none;
+    }
+
+    .modal-acciones {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 27px;
+    }
+
+    .boton-cancelar,
+    .boton-confirmar {
+        padding: 12px 18px;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 13px;
+        font-weight: 1000;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .boton-cancelar {
+        background: #edf1f7;
+        color: #142044;
+    }
+
+    .boton-cancelar:hover {
+        background: #dce3ee;
+    }
+
+    .boton-confirmar {
+        background: #142044;
+        color: white;
+    }
+
+    .boton-confirmar span {
+        color: #f5ca24;
+        margin-left: 8px;
+    }
+
+    .boton-confirmar:hover {
+        background: #00aef0;
+        transform: translateY(-2px);
+    }
+
+    .mensaje-modal {
+        color: #00805b;
+        background: #e8f8f1;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1.5;
+    }
+
+    @keyframes aparecerModal {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes subirModal {
+        from {
+            opacity: 0;
+            transform: translateY(25px) scale(.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 
     /* PIE DE PÁGINA */
