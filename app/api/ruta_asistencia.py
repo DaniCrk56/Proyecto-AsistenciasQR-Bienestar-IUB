@@ -15,6 +15,13 @@ class DatosEscaneoQR(BaseModel):
 @router.get("/")
 def listar_asistencias():
     return repo.obtener_todos()
+    
+    @router.get("/evento/{id_evento}")
+def listar_asistencias_evento(
+    id_evento: int,
+    administrador: dict = Depends(validar_administrador)
+):
+    return repo.obtener_por_evento(id_evento)
 
 @router.get("/{asistencia_id}")
 def obtener_asistencia(asistencia_id: int):
