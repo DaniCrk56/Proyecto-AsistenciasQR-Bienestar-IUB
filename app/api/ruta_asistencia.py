@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from app.models.asistencia import Asistencia
 from app.repositories.asistencia_repo import AsistenciaRepository
 from app.api.rutas_auth import validar_administrador
+
 
 router = APIRouter(prefix="/asistencias", tags=["Gestión de Asistencias"])
 repo = AsistenciaRepository()
@@ -18,6 +18,27 @@ class DatosEscaneoQR(BaseModel):
 @router.get("/")
 def listar_asistencias():
     return repo.obtener_todos()
+
+
+@router.get("/evento/{id_evento}")
+def listar_asistencias_evento(
+    id_evento: int,
+    administrador: dict = Depends(validar_administrador)
+):
+    return repo.obtener_por_evento(id_evento)
+
+
+@router.get("/{asistencia_id}")
+def obtener_asistencia(asistencia_id: int):
+    asistencia = repo.obtener_por_id(asistencia_id)
+
+    if not asistencia:
+        raise HTTPException(
+            status_code=404,
+            detail="Asistencia no encontrada"
+        )
+
+    return asistencia
 
 
 @router.get("/evento/{id_evento}")
