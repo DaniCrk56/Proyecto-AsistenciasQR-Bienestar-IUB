@@ -42,10 +42,6 @@ let nuevaActividad = {
     function cambiarSeccion(seccion) {
         seccionActual = seccion;
 
-function cerrarSesion() {
-    localStorage.removeItem('usuario');
-    window.location.href = '/';
-}
         if (seccion === 'crear') {
             cargarOpciones();
         }
@@ -170,10 +166,6 @@ async function crearActividad(evento) {
         <div class="parte-inferior">
             <div class="separador"></div>
 
-            <button class="cerrar" onclick={cerrarSesion}>
-    <span class="icono">↪</span>
-    Cerrar sesión
-</button>
 
             <div class="usuario">
                 <div class="avatar">AD</div>
