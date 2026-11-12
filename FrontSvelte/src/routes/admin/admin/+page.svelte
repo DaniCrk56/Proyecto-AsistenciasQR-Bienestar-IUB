@@ -51,12 +51,6 @@ function cerrarSesion() {
     localStorage.removeItem('usuario');
     window.location.href = '/';
 }
-
-        if (seccion === 'crear') {
-            cargarOpciones();
-        }
-    }
-
     async function cargarOpciones() {
         cargandoOpciones = true;
         mensajeOpciones = '';
