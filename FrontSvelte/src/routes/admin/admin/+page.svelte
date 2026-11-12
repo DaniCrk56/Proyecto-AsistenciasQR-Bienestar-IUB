@@ -42,6 +42,11 @@ let nuevaActividad = {
     function cambiarSeccion(seccion) {
         seccionActual = seccion;
 
+function cerrarSesion() {
+    localStorage.removeItem('usuario');
+    window.location.href = '/';
+}
+
         if (seccion === 'crear') {
             cargarOpciones();
         }
@@ -409,15 +414,20 @@ async function crearActividad(evento) {
                 <p>Aquí integraremos tu apartado de consulta de asistencias.</p>
             </section>
 
-        {:else}
+   {:else}
 
-            <section class="seccion-vacia">
-                <div class="vacio-icono">♙</div>
-                <h2>Mi perfil</h2>
-                <p>Información del administrador.</p>
-            </section>
+    <section class="seccion-vacia">
+        <div class="vacio-icono">♙</div>
+        <h2>Mi perfil</h2>
+        <p>Información del administrador.</p>
 
-        {/if}
+        <button class="boton-cerrar-sesion" onclick={cerrarSesion}>
+            <span>↪</span>
+            Cerrar sesión
+        </button>
+    </section>
+
+{/if}
 
     </main>
 </div>
@@ -1024,4 +1034,27 @@ async function crearActividad(evento) {
             display: none;
         }
     }
+.boton-cerrar-sesion {
+    margin-top: 25px;
+    padding: 13px 25px;
+    border: none;
+    border-radius: 10px;
+    background: #0785b6;
+    color: white;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.boton-cerrar-sesion:hover {
+    background: #056b91;
+    transform: translateY(-2px);
+}
+
+.boton-cerrar-sesion span {
+    margin-right: 8px;
+    font-size: 17px;
+}
 </style>
