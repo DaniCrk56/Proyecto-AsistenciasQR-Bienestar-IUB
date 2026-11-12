@@ -43,8 +43,8 @@ def crear_inscripcion(inscripcion: Inscripcion):
 
     return {
         "mensaje": "Inscripción registrada exitosamente",
-        "id": resultado[0],
-        "codigo_qr": str(resultado[1])
+        "id": resultado["id"],
+        "codigo_qr": str(resultado["codigo_qr"])
     }
 
 
