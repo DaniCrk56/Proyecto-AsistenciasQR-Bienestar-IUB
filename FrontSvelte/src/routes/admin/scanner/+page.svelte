@@ -7,10 +7,7 @@
 
     
     let evento = let eventos = [];
-function cerrarSesion() {
-    localStorage.removeItem('usuario');
-    window.location.href = '/';
-}
+
 
     onMount(() => {
         const parametros = new URLSearchParams(window.location.search);
@@ -49,10 +46,7 @@ function cerrarSesion() {
             </div>
         </div>
 
-        <button class="cerrar" onclick={cerrarSesion}>
-    <span class="icono">↪</span>
-    Cerrar sesión
-</button>
+        
     </header>
 
     <main class="contenido">
@@ -634,39 +628,4 @@ function cerrarSesion() {
             min-height: 350px;
         }
     }
-.cerrar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 12px 15px;
-    background: transparent;
-    border: none;
-    color: white;
-    font-family: inherit;
-    font-size: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.cerrar::after {
-    content: '';
-    position: absolute;
-    left: 15px;
-    bottom: 5px;
-    width: 0;
-    height: 2px;
-    background: #0785b6;
-    transition: width 0.3s ease;
-}
-
-.cerrar:hover::after {
-    width: calc(100% - 30px);
-}
-
-.cerrar:hover {
-    opacity: 0.8;
-}
 </style>
