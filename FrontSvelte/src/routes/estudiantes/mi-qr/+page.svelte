@@ -3,79 +3,135 @@
     import { onMount } from 'svelte';
     import QRCode from 'qrcode';
 
+    const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
+
     let estudiante = {
-        nombre: 'Cargando...',
-        documento: 'No registrado',
-        programa: 'No registrado',
-        codigo: 'No registrado'
+        nombre: 'Cargando...'
     };
 
+    let inscripciones = [];
     let qrImagen = '';
     let mensaje = '';
     let menuAbierto = false;
+    let cargando = true;
+    let mostrarModal = false;
+    let inscripcionSeleccionada = null;
+    let generandoQR = false;
 
     onMount(async () => {
         const usuarioGuardado = localStorage.getItem('usuario');
 
-        if (usuarioGuardado) {
-            try {
-                const usuario = JSON.parse(usuarioGuardado);
-
-                estudiante = {
-                    nombre: `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim(),
-                    documento: usuario.numero_documento || 'No registrado',
-                    programa: usuario.programa || 'No registrado',
-                    codigo: usuario.id ? `IUB-EST-${usuario.id}` : 'No registrado'
-                };
-
-                if (usuario.id) {
-                    const contenidoQR = JSON.stringify({
-                        tipo: 'estudiante',
-                        id: usuario.id
-                    });
-
-                    qrImagen = await QRCode.toDataURL(contenidoQR, {
-                        width: 400,
-                        margin: 2,
-                        errorCorrectionLevel: 'H',
-                        color: {
-                            dark: '#142044',
-                            light: '#FFFFFF'
-                        }
-                    });
-                } else {
-                    mensaje = 'No se encontró el identificador del estudiante.';
-                }
-
-            } catch (error) {
-                console.error('Error generando el QR:', error);
-                mensaje = 'No fue posible generar el código QR.';
-            }
-        } else {
+        if (!usuarioGuardado) {
             estudiante.nombre = 'No se encontró el usuario';
-            mensaje = 'Inicia sesión para consultar tu código QR.';
+            mensaje = 'Inicia sesión para consultar tus códigos QR.';
+            cargando = false;
+            return;
+        }
+
+        try {
+            const usuario = JSON.parse(usuarioGuardado);
+
+            estudiante.nombre =
+                `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim();
+
+            if (!usuario.id) {
+                mensaje = 'No se encontró el identificador del estudiante.';
+                cargando = false;
+                return;
+            }
+
+            const respuesta = await fetch(
+                `${URL_BASE}/inscripciones/estudiante/${usuario.id}`
+            );
+
+            if (!respuesta.ok) {
+                throw new Error('No fue posible consultar las inscripciones.');
+            }
+
+            const datos = await respuesta.json();
+
+            inscripciones = Array.isArray(datos) ? datos : [];
+
+        } catch (error) {
+            console.error('Error consultando inscripciones:', error);
+            mensaje = 'No fue posible cargar tus inscripciones. Intenta nuevamente.';
+        } finally {
+            cargando = false;
         }
     });
 
+    async function verQR(inscripcion) {
+        inscripcionSeleccionada = inscripcion;
+        qrImagen = '';
+        mensaje = '';
+        mostrarModal = true;
+        generandoQR = true;
+
+        try {
+            qrImagen = await QRCode.toDataURL(inscripcion.codigo_qr, {
+                width: 400,
+                margin: 2,
+                errorCorrectionLevel: 'H',
+                color: {
+                    dark: '#142044',
+                    light: '#FFFFFF'
+                }
+            });
+        } catch (error) {
+            console.error('Error generando QR:', error);
+            mensaje = 'No fue posible generar el código QR.';
+        } finally {
+            generandoQR = false;
+        }
+    }
+
+    function cerrarModal() {
+        mostrarModal = false;
+        inscripcionSeleccionada = null;
+        qrImagen = '';
+        mensaje = '';
+    }
+
     function descargarQR() {
-        if (!qrImagen) {
+        if (!qrImagen || !inscripcionSeleccionada) {
             mensaje = 'El código QR todavía no está disponible.';
             return;
         }
 
         const enlace = document.createElement('a');
         enlace.href = qrImagen;
-        enlace.download = `QR-${estudiante.codigo}.png`;
+        enlace.download = `QR-Inscripcion-${inscripcionSeleccionada.id}.png`;
         enlace.click();
 
         mensaje = 'Tu código QR se descargó correctamente.';
     }
-</script>
 
+    function formatoFecha(fecha) {
+        if (!fecha) return 'Fecha no disponible';
+
+        const partes = fecha.split('-');
+
+        if (partes.length !== 3) return fecha;
+
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function formatoHora(hora) {
+        if (!hora) return 'Hora no disponible';
+
+        return hora.substring(0, 5);
+    }
+
+    function nombreArchivo(nombre) {
+        return (nombre || 'evento')
+            .replace(/[^a-zA-Z0-9]/g, '-')
+            .replace(/-+/g, '-');
+    }
+</script>
 
 <svelte:head>
     <title>Mi código QR | Bienestar Universitario IUB</title>
-    <meta name="description" content="Consulta tu código QR personal para registrar tu asistencia a los eventos universitarios." />
+    <meta name="description" content="Consulta los códigos QR de tus inscripciones a eventos universitarios." />
     <link
         href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900;1000&display=swap"
         rel="stylesheet"
@@ -142,6 +198,7 @@
 
     <main>
 
+        <!-- PRESENTACIÓN -->
         <section class="presentacion">
             <div class="presentacion-contenido">
                 <span class="etiqueta">
@@ -152,8 +209,8 @@
                 <h1>Mi código <span>QR.</span></h1>
 
                 <p>
-                    Tu identificación digital para participar y registrar
-                    tu asistencia en las actividades de Bienestar Universitario.
+                    Consulta los códigos QR de tus inscripciones y presenta
+                    el correspondiente para registrar tu asistencia en cada evento.
                 </p>
             </div>
 
@@ -164,71 +221,112 @@
             </div>
         </section>
 
+        <!-- CONTENIDO -->
         <section class="contenido">
 
             <div class="titulo-seccion">
                 <div>
-                    <span class="subtitulo">TU IDENTIFICACIÓN PERSONAL</span>
-                    <h2>Mi identificación digital</h2>
-                    <p>Presenta este código al personal encargado para registrar tu asistencia.</p>
+                    <span class="subtitulo">TUS INSCRIPCIONES</span>
+                    <h2>Mis eventos inscritos</h2>
+                    <p>
+                        Selecciona un evento para consultar y descargar
+                        tu código QR de asistencia.
+                    </p>
                 </div>
 
                 <div class="estado">
                     <span></span>
-                    Código de demostración
+                    {inscripciones.length} {inscripciones.length === 1 ? 'inscripción' : 'inscripciones'}
                 </div>
             </div>
 
-            <div class="qr-layout">
-
-                <div class="tarjeta-qr">
-
-                    <div class="qr-cabecera">
-                        <div class="qr-logo">
-                            <img src="/LogoIUB.png" alt="Logo institucional" />
-                        </div>
-
-                        <div>
-                            <strong>INSTITUCIÓN UNIVERSITARIA</strong>
-                            <span>DE BARRANQUILLA</span>
-                        </div>
-                    </div>
-
-                    <div class="linea"></div>
-
-                    <div class="qr-titulo">
-                        <span>IDENTIFICACIÓN DE ESTUDIANTE</span>
-                        <h3>Código personal</h3>
-                    </div>
-
-                  <div class="qr-demo">
-    {#if qrImagen}
-        <img
-            src={qrImagen}
-            alt="Código QR personal del estudiante"
-            class="qr-imagen"
-        />
-    {:else}
-        <div class="qr-cargando">
-            Generando QR...
-        </div>
-    {/if}
-</div>
-
-                    <div class="codigo">
-                        <span>CÓDIGO DE IDENTIFICACIÓN</span>
-                        <strong>{estudiante.codigo}</strong>
-                    </div>
-
-                    <div class="qr-pie">
-                        <span>BIENESTAR UNIVERSITARIO</span>
-                        <span>IUB · 2026</span>
-                    </div>
-
+            {#if cargando}
+                <div class="mensaje-estado">
+                    <div class="cargando-circulo"></div>
+                    <h3>Consultando tus inscripciones...</h3>
+                    <p>Estamos buscando los eventos en los que estás registrado.</p>
                 </div>
 
-            </div>
+            {:else if mensaje && inscripciones.length === 0}
+                <div class="mensaje-estado">
+                    <div class="icono-estado">!</div>
+                    <h3>No fue posible cargar tus eventos</h3>
+                    <p>{mensaje}</p>
+                </div>
 
+            {:else if inscripciones.length === 0}
+                <div class="mensaje-estado">
+                    <div class="icono-estado">▦</div>
+                    <h3>Aún no tienes inscripciones</h3>
+                    <p>
+                        Cuando te inscribas a un evento de Bienestar Universitario,
+                        podrás consultar aquí su respectivo código QR.
+                    </p>
+
+                    <a href="/estudiantes/eventos" class="boton-eventos">
+                        Explorar eventos
+                    </a>
+                </div>
+
+            {:else}
+                <div class="eventos-grid">
+
+                    {#each inscripciones as inscripcion (inscripcion.id)}
+                        <article class="tarjeta-evento">
+
+                            <div class="evento-cabecera">
+                                <div class="evento-icono">▦</div>
+
+                                <span class="evento-estado">
+                                    <span></span>
+                                    Inscrito
+                                </span>
+                            </div>
+
+                            <div class="evento-contenido">
+                                <span class="evento-etiqueta">EVENTO UNIVERSITARIO</span>
+
+                                <h3>{inscripcion.nombre_evento}</h3>
+
+                                <p class="evento-descripcion">
+                                    {inscripcion.descripcion || 'Participa en esta actividad de Bienestar Universitario.'}
+                                </p>
+
+                                <div class="evento-datos">
+                                    <div>
+                                        <span class="dato-icono">▣</span>
+                                        <span>{formatoFecha(inscripcion.fecha)}</span>
+                                    </div>
+
+                                    <div>
+                                        <span class="dato-icono">◷</span>
+                                        <span>
+                                            {formatoHora(inscripcion.hora_inicio)}
+                                            - {formatoHora(inscripcion.hora_fin)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="evento-pie">
+                                <span>Inscripción #{inscripcion.id}</span>
+
+                                <button
+                                    class="boton-ver-qr"
+                                    onclick={() => verQR(inscripcion)}
+                                >
+                                    Ver mi QR
+                                    <span>→</span>
+                                </button>
+                            </div>
+
+                        </article>
+                    {/each}
+
+                </div>
+            {/if}
+
+            <!-- INSTRUCCIONES -->
             <section class="instrucciones">
                 <div class="instrucciones-titulo">
                     <span class="subtitulo">FÁCIL Y RÁPIDO</span>
@@ -240,15 +338,15 @@
                     <div class="paso">
                         <div class="paso-numero">01</div>
                         <div class="paso-icono">▣</div>
-                        <h3>Consulta tu QR</h3>
-                        <p>Ingresa a este apartado desde tu cuenta estudiantil.</p>
+                        <h3>Selecciona tu evento</h3>
+                        <p>Busca el evento al que te inscribiste y pulsa Ver mi QR.</p>
                     </div>
 
                     <div class="paso">
                         <div class="paso-numero">02</div>
                         <div class="paso-icono">▤</div>
                         <h3>Presenta tu código</h3>
-                        <p>Muestra tu identificación digital al ingresar al evento.</p>
+                        <p>Muestra el código QR correspondiente al evento.</p>
                     </div>
 
                     <div class="paso">
@@ -265,6 +363,86 @@
 
     </main>
 
+    <!-- MODAL DEL QR -->
+    {#if mostrarModal && inscripcionSeleccionada}
+        <div
+            class="modal-fondo"
+            role="presentation"
+            onclick={(evento) => {
+                if (evento.target === evento.currentTarget) cerrarModal();
+            }}
+        >
+            <div class="modal-qr" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-qr">
+
+                <div class="modal-cabecera">
+                    <div>
+                        <span class="subtitulo">TU IDENTIFICACIÓN PARA EL EVENTO</span>
+                        <h2 id="titulo-modal-qr">Mi código QR</h2>
+                    </div>
+
+                    <button
+                        class="boton-cerrar"
+                        onclick={cerrarModal}
+                        aria-label="Cerrar ventana"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="modal-evento">
+                    <span>EVENTO</span>
+                    <strong>{inscripcionSeleccionada.nombre_evento}</strong>
+                    <small>
+                        {formatoFecha(inscripcionSeleccionada.fecha)}
+                        · {formatoHora(inscripcionSeleccionada.hora_inicio)}
+                    </small>
+                </div>
+
+                <div class="qr-modal-contenedor">
+                    {#if generandoQR}
+                        <div class="qr-cargando">
+                            Generando código QR...
+                        </div>
+                    {:else if qrImagen}
+                        <img
+                            src={qrImagen}
+                            alt="Código QR de la inscripción al evento"
+                            class="qr-imagen"
+                        />
+                    {:else}
+                        <div class="qr-cargando">
+                            No se pudo generar el código QR.
+                        </div>
+                    {/if}
+                </div>
+
+                <p class="modal-indicacion">
+                    Presenta este código al personal encargado para registrar
+                    tu asistencia al evento.
+                </p>
+
+                <button
+                    class="boton-descargar"
+                    onclick={descargarQR}
+                    disabled={!qrImagen}
+                >
+                    <span>↓</span>
+                    Descargar código QR
+                </button>
+
+                {#if mensaje}
+                    <div class="mensaje">{mensaje}</div>
+                {/if}
+
+                <button class="boton-volver" onclick={cerrarModal}>
+                    Cerrar
+                </button>
+
+            </div>
+        </div>
+    {/if}
+
+    <!-- FOOTER -->
     <footer>
         <div class="footer-contenido">
             <div class="footer-identidad">
@@ -304,7 +482,7 @@
         overflow: hidden;
     }
 
-    /* ENCABEZADO: MISMO DISEÑO QUE EVENTOS */
+    /* ENCABEZADO */
 
     .encabezado {
         width: 100%;
@@ -317,6 +495,7 @@
         gap: 25px;
         position: relative;
         z-index: 20;
+        animation: entradaQRArriba .7s ease both;
     }
 
     .identidad {
@@ -378,6 +557,8 @@
         align-items: center;
         gap: 9px;
         transition: .2s;
+        position: relative;
+        padding-bottom: 7px;
     }
 
     .enlace span {
@@ -387,6 +568,24 @@
     .enlace:hover,
     .enlace.activo {
         color: #f5ca24;
+    }
+
+    .enlace::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 2px;
+        background: #f5ca24;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .3s ease;
+    }
+
+    .enlace:hover::after,
+    .enlace.activo::after {
+        transform: scaleX(1);
     }
 
     .boton-menu {
@@ -408,6 +607,7 @@
         display: flex;
         align-items: center;
         box-shadow: 0 12px 30px rgba(17, 28, 59, .15);
+        animation: entradaQRAbajo .8s ease both;
     }
 
     .presentacion-contenido {
@@ -472,12 +672,14 @@
     .circulo-1 {
         width: 240px;
         height: 240px;
+        animation: flotarQR 6s ease-in-out infinite;
     }
 
     .circulo-2 {
         width: 175px;
         height: 175px;
         border-color: rgba(245,202,36,.5);
+        animation: flotarQR 5s ease-in-out infinite reverse;
     }
 
     .presentacion-decoracion > span {
@@ -485,6 +687,7 @@
         font-size: 55px;
         font-weight: 1000;
         transform: rotate(-10deg);
+        animation: girarQR 5s ease-in-out infinite;
     }
 
     /* CONTENIDO */
@@ -533,6 +736,7 @@
         border-radius: 30px;
         font-size: 10px;
         font-weight: 900;
+        white-space: nowrap;
     }
 
     .estado span {
@@ -542,249 +746,353 @@
         border-radius: 50%;
     }
 
-    /* DISTRIBUCIÓN QR */
+    /* TARJETAS DE EVENTOS */
 
-    .qr-layout {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
+    .eventos-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
 
-    .tarjeta-qr {
-    width: 100%;
-    max-width: 430px;
-    margin: 0 auto;
-    background: white;
-    border: 1px solid #e9edf4;
-    border-radius: 22px;
-    padding: 28px;
-    box-shadow: 0 10px 30px rgba(20,32,68,.06);
-    text-align: center;
-}
+    .tarjeta-evento {
+        background: white;
+        border: 1px solid #e9edf4;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(20,32,68,.06);
+        transition: transform .3s ease, box-shadow .3s ease;
+        animation: entradaQRAbajo .7s ease both;
+    }
 
-    .qr-cabecera {
+    .tarjeta-evento:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 35px rgba(20,32,68,.12);
+    }
+
+    .evento-cabecera {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 22px;
+    }
+
+    .evento-icono {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: #edf3fb;
+        color: #1d4b8c;
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+        font-weight: 900;
+    }
+
+    .evento-estado {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 12px;
-    }
-
-    .qr-logo {
-        width: 52px;
-        height: 52px;
-        padding: 4px;
-        border-radius: 10px;
-        background: #fff;
-    }
-
-    .qr-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-
-    .qr-cabecera div:last-child {
-        display: flex;
-        flex-direction: column;
-        text-align: left;
-        gap: 4px;
-    }
-
-    .qr-cabecera strong {
-        color: #142044;
-        font-size: 11px;
-        font-weight: 1000;
-    }
-
-    .qr-cabecera span {
-        color: #b18c0b;
+        gap: 7px;
+        padding: 8px 12px;
+        border-radius: 20px;
+        background: #e9f8ef;
+        color: #21834b;
         font-size: 10px;
         font-weight: 900;
-        letter-spacing: 1px;
     }
 
-    .linea {
-        height: 1px;
-        background: #edf0f5;
-        margin: 22px 0;
+    .evento-estado span {
+        width: 7px;
+        height: 7px;
+        background: #27ae60;
+        border-radius: 50%;
     }
 
-    .qr-titulo span {
-        color: #929bad;
+    .evento-etiqueta {
+        color: #b18c0b;
         font-size: 9px;
         font-weight: 900;
         letter-spacing: 1.5px;
     }
 
-    .qr-titulo h3 {
+    .evento-contenido h3 {
+        color: #142044;
+        font-size: 21px;
+        font-weight: 1000;
+        margin: 8px 0;
+    }
+
+    .evento-descripcion {
+        color: #8992a5;
+        font-size: 12px;
+        line-height: 1.7;
+        min-height: 40px;
+        margin: 0 0 20px;
+    }
+
+    .evento-datos {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px 0;
+        border-top: 1px solid #edf0f5;
+    }
+
+    .evento-datos div {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #536580;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .dato-icono {
+        color: #1d4b8c;
+        font-size: 17px;
+    }
+
+    .evento-pie {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border-top: 1px solid #edf0f5;
+        padding-top: 17px;
+        margin-top: 5px;
+    }
+
+    .evento-pie > span {
+        color: #929bad;
+        font-size: 10px;
+        font-weight: 900;
+    }
+
+    .boton-ver-qr {
+        border: none;
+        border-radius: 30px;
+        padding: 12px 18px;
+        background: linear-gradient(100deg, #142044, #1e4d91);
+        color: white;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 1000;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: .25s ease;
+    }
+
+    .boton-ver-qr:hover {
+        background: #f5ca24;
+        color: #142044;
+        transform: translateY(-3px);
+    }
+
+    .boton-ver-qr span {
+        font-size: 18px;
+    }
+
+    /* MENSAJES DE ESTADO */
+
+    .mensaje-estado {
+        width: 100%;
+        padding: 55px 25px;
+        background: white;
+        border: 1px solid #e9edf4;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(20,32,68,.05);
+        animation: entradaQRAbajo .6s ease both;
+    }
+
+    .mensaje-estado h3 {
         color: #142044;
         font-size: 20px;
         font-weight: 1000;
-        margin: 6px 0 20px;
+        margin: 15px 0 8px;
     }
 
-    .qr-contenedor {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .mensaje-estado p {
+        color: #8992a5;
+        font-size: 12px;
+        line-height: 1.7;
+        max-width: 480px;
+        margin: auto;
     }
 
-    .qr-demo {
-    width: 230px;
-    height: 230px;
-    padding: 12px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: white;
-    border: 1px solid #e5eaf2;
-    border-radius: 12px;
-    box-shadow: 0 5px 18px rgba(20,32,68,.06);
-    animation: aparecerCodigo .9s ease both;
-    animation-delay: .3s;
-    transition: box-shadow .3s ease;
-}
-
-    .qr-patron {
+    .icono-estado {
+        width: 60px;
+        height: 60px;
+        margin: auto;
+        border-radius: 18px;
         display: grid;
+        place-items: center;
+        background: #edf3fb;
+        color: #1d4b8c;
+        font-size: 30px;
+        font-weight: 1000;
+    }
+
+    .cargando-circulo {
+        width: 38px;
+        height: 38px;
+        margin: auto;
+        border: 4px solid #e5eaf2;
+        border-top-color: #1d4b8c;
+        border-radius: 50%;
+        animation: girarCargando .8s linear infinite;
+    }
+
+    .boton-eventos {
+        display: inline-flex;
+        margin-top: 22px;
+        padding: 13px 22px;
+        border-radius: 30px;
+        background: linear-gradient(100deg, #142044, #1e4d91);
+        color: white;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 1000;
+        transition: .25s ease;
+    }
+
+    .boton-eventos:hover {
+        background: #f5ca24;
+        color: #142044;
+        transform: translateY(-3px);
+    }
+
+    /* MODAL QR */
+
+    .modal-fondo {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(10, 18, 40, .75);
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-y: auto;
+        animation: aparecerModal .25s ease both;
+    }
+
+    .modal-qr {
         width: 100%;
-        height: 100%;
-        grid-template-columns: repeat(21, 1fr);
-        grid-template-rows: repeat(21, 1fr);
-        gap: 2px;
-    }
-
-    .qr-patron span {
+        max-width: 460px;
+        max-height: 95vh;
+        overflow-y: auto;
         background: white;
-        border-radius: 1px;
+        border-radius: 22px;
+        padding: 28px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        animation: entradaQRAbajo .35s ease both;
     }
 
-    .qr-patron span.activo {
-        background: #142044;
+    .modal-cabecera {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
     }
 
-    .codigo {
+    .modal-cabecera h2 {
+        color: #142044;
+        font-size: 25px;
+        font-weight: 1000;
+        margin: 7px 0 0;
+    }
+
+    .boton-cerrar {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        border: none;
+        border-radius: 50%;
+        background: #edf0f5;
+        color: #142044;
+        font-size: 17px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .boton-cerrar:hover {
+        background: #f5ca24;
+        transform: rotate(90deg);
+    }
+
+    .modal-evento {
         display: flex;
         flex-direction: column;
         gap: 6px;
-        margin-top: 20px;
+        padding: 15px;
+        background: #edf3fb;
+        border-radius: 13px;
+        text-align: center;
     }
 
-    .codigo span {
-        color: #8992a5;
-        font-size: 9px;
-        font-weight: 900;
-        letter-spacing: 1px;
-    }
-
-    .codigo strong {
-        color: #142044;
-        font-size: 17px;
-        font-weight: 1000;
-        letter-spacing: 1px;
-    }
-
-    .qr-pie {
-        display: flex;
-        justify-content: space-between;
-        border-top: 1px solid #edf0f5;
-        padding-top: 15px;
-        margin-top: 22px;
-        color: #929bad;
-        font-size: 9px;
-        font-weight: 900;
-        letter-spacing: .5px;
-    }
-
-    .informacion {
-        background: white;
-        border: 1px solid #e9edf4;
-        border-radius: 22px;
-        padding: 32px;
-        box-shadow: 0 10px 30px rgba(20,32,68,.06);
-    }
-
-    .informacion-cabecera {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 27px;
-    }
-
-    .avatar {
-        width: 49px;
-        height: 49px;
-        border-radius: 15px;
-        display: grid;
-        place-items: center;
-        color: white;
-        background: linear-gradient(135deg, #142044, #3476bc);
-        font-size: 21px;
-        font-weight: 1000;
-    }
-
-    .informacion-cabecera span {
+    .modal-evento span {
         color: #b18c0b;
         font-size: 9px;
         font-weight: 900;
         letter-spacing: 1.5px;
     }
 
-    .informacion-cabecera h3 {
+    .modal-evento strong {
         color: #142044;
-        font-size: 21px;
-        font-weight: 1000;
-        margin: 4px 0 0;
-    }
-
-    .campo {
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-        padding: 15px 0;
-        border-bottom: 1px solid #edf0f5;
-    }
-
-    .campo span {
-        color: #8992a5;
-        font-size: 10px;
-        font-weight: 700;
-    }
-
-    .campo strong {
-        color: #263452;
-        font-size: 13px;
-        font-weight: 900;
-    }
-
-    .aviso {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 15px;
-        margin-top: 22px;
-        background: #edf3fb;
-        border-radius: 13px;
-    }
-
-    .aviso-icono {
-        color: #1d4b8c;
-        font-size: 19px;
+        font-size: 16px;
         font-weight: 1000;
     }
 
-    .aviso p {
+    .modal-evento small {
         color: #536580;
         font-size: 10px;
+        font-weight: 800;
+    }
+
+    .qr-modal-contenedor {
+        width: 250px;
+        height: 250px;
+        padding: 12px;
+        margin: 22px auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: white;
+        border: 1px solid #e5eaf2;
+        border-radius: 14px;
+        box-shadow: 0 5px 18px rgba(20,32,68,.06);
+        animation: aparecerCodigo .5s ease both;
+    }
+
+    .qr-imagen {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .qr-cargando {
+        color: #8992a5;
+        font-size: 12px;
+        font-weight: 900;
+        text-align: center;
+    }
+
+    .modal-indicacion {
+        color: #7d879c;
+        font-size: 11px;
         line-height: 1.7;
-        margin: 0;
+        text-align: center;
+        margin: 0 0 18px;
     }
 
     .boton-descargar {
         width: 100%;
-        margin-top: 22px;
         padding: 15px;
         border: none;
         border-radius: 30px;
@@ -802,15 +1110,40 @@
         transition: .25s ease;
     }
 
-    .boton-descargar:hover {
+    .boton-descargar:hover:not(:disabled) {
         background: #f5ca24;
         color: #142044;
         transform: translateY(-3px);
         box-shadow: 0 10px 20px rgba(245,202,36,.25);
     }
 
+    .boton-descargar:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
     .boton-descargar span {
         font-size: 20px;
+    }
+
+    .boton-volver {
+        width: 100%;
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid #e5eaf2;
+        border-radius: 30px;
+        background: white;
+        color: #536580;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .boton-volver:hover {
+        background: #edf3fb;
+        color: #142044;
     }
 
     .mensaje {
@@ -821,6 +1154,7 @@
         color: #234878;
         font-size: 11px;
         line-height: 1.6;
+        animation: entradaQRAbajo .4s ease both;
     }
 
     /* INSTRUCCIONES */
@@ -853,6 +1187,25 @@
         background: white;
         border: 1px solid #e9edf4;
         box-shadow: 0 7px 20px rgba(20,32,68,.04);
+        transition: transform .3s ease, box-shadow .3s ease;
+        animation: entradaQRAbajo .8s ease both;
+    }
+
+    .paso:nth-child(1) {
+        animation-delay: .1s;
+    }
+
+    .paso:nth-child(2) {
+        animation-delay: .2s;
+    }
+
+    .paso:nth-child(3) {
+        animation-delay: .3s;
+    }
+
+    .paso:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 15px 30px rgba(20,32,68,.10);
     }
 
     .paso-numero {
@@ -874,6 +1227,12 @@
         color: #1d4b8c;
         font-size: 23px;
         font-weight: 900;
+        transition: transform .3s ease, background .3s ease;
+    }
+
+    .paso:hover .paso-icono {
+        transform: scale(1.12) rotate(-5deg);
+        background: #dceafa;
     }
 
     .paso h3 {
@@ -896,6 +1255,7 @@
         background: #101a36;
         color: white;
         padding: 35px 6% 0;
+        animation: entradaQRAbajo .8s ease both;
     }
 
     .footer-contenido {
@@ -955,10 +1315,78 @@
         font-size: 10px;
     }
 
+    /* ANIMACIONES */
+
+    @keyframes entradaQRArriba {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes entradaQRAbajo {
+        from {
+            opacity: 0;
+            transform: translateY(22px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes aparecerCodigo {
+        from {
+            opacity: 0;
+            transform: scale(.88);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes flotarQR {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.08);
+        }
+    }
+
+    @keyframes girarQR {
+        0%, 100% {
+            transform: rotate(-10deg);
+        }
+        50% {
+            transform: rotate(5deg);
+        }
+    }
+
+    @keyframes girarCargando {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes aparecerModal {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
     /* RESPONSIVE */
 
     @media (max-width: 850px) {
-        .qr-layout {
+        .eventos-grid {
             grid-template-columns: 1fr;
         }
 
@@ -967,8 +1395,6 @@
             opacity: .4;
         }
     }
-
-    /* MENÚ RESPONSIVE: IGUAL AL DE EVENTOS */
 
     @media (max-width: 700px) {
         .encabezado {
@@ -1074,16 +1500,6 @@
             font-size: 24px;
         }
 
-        .tarjeta-qr,
-        .informacion {
-            padding: 22px;
-        }
-
-        .qr-demo {
-            width: 210px;
-            height: 210px;
-        }
-
         .pasos {
             grid-template-columns: 1fr;
         }
@@ -1101,232 +1517,39 @@
             flex-direction: column;
             gap: 10px;
         }
+
+        .modal-qr {
+            padding: 22px;
+        }
+
+        .qr-modal-contenedor {
+            width: 225px;
+            height: 225px;
+        }
     }
 
+    @media (max-width: 400px) {
+        .evento-pie {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 
-.encabezado {
-    animation: entradaQRArriba .7s ease both;
-}
+        .boton-ver-qr {
+            width: 100%;
+            justify-content: center;
+        }
 
-.presentacion {
-    animation: entradaQRAbajo .8s ease both;
-}
-
-.circulo-1 {
-    animation: flotarQR 6s ease-in-out infinite;
-}
-
-.circulo-2 {
-    animation: flotarQR 5s ease-in-out infinite reverse;
-}
-
-
-.presentacion-decoracion > span {
-    animation: girarQR 5s ease-in-out infinite;
-}
-
-.tarjeta-qr {
-    animation: entradaQRAbajo .8s ease both;
-    transition: transform .3s ease, box-shadow .3s ease;
-    animation-delay: .1s;
-}
-
-
-.tarjeta-qr:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 35px rgba(20, 32, 68, .12);
-}
-
-.qr-demo {
-    animation: aparecerCodigo .9s ease both;
-    animation-delay: .3s;
-    transition: box-shadow .3s ease;
-}
-
-.qr-demo:hover {
-    box-shadow: 0 8px 25px rgba(20, 32, 68, .13);
-}
-
-
-.informacion {
-    animation: entradaQRAbajo .8s ease both;
-    animation-delay: .2s;
-    transition: transform .3s ease, box-shadow .3s ease;
-}
-
-.informacion:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 16px 35px rgba(20, 32, 68, .10);
-}
-
-
-.campo {
-    transition: padding-left .25s ease, background .25s ease;
-}
-
-.campo:hover {
-    padding-left: 8px;
-}
-
-
-.avatar {
-    transition: transform .3s ease;
-}
-
-.avatar:hover {
-    transform: rotate(-8deg) scale(1.08);
-}
-
-
-.boton-descargar {
-    transition: transform .3s ease, box-shadow .3s ease, background .3s ease;
-}
-
-
-.mensaje {
-    animation: entradaQRAbajo .4s ease both;
-}
-
-
-.paso {
-    transition: transform .3s ease, box-shadow .3s ease;
-    animation: entradaQRAbajo .8s ease both;
-}
-
-.paso:nth-child(1) {
-    animation-delay: .1s;
-}
-
-.paso:nth-child(2) {
-    animation-delay: .2s;
-}
-
-.paso:nth-child(3) {
-    animation-delay: .3s;
-}
-
-.paso:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 15px 30px rgba(20, 32, 68, .10);
-}
-
-.paso-icono {
-    transition: transform .3s ease, background .3s ease;
-}
-
-.paso:hover .paso-icono {
-    transform: scale(1.12) rotate(-5deg);
-    background: #dceafa;
-}
-
-footer {
-    animation: entradaQRAbajo .8s ease both;
-}
-
-
-@keyframes entradaQRArriba {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
+        .modal-cabecera h2 {
+            font-size: 21px;
+        }
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation: none !important;
+            transition: none !important;
+        }
     }
-}
-
-@keyframes entradaQRAbajo {
-    from {
-        opacity: 0;
-        transform: translateY(22px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes aparecerCodigo {
-    from {
-        opacity: 0;
-        transform: scale(.88);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@keyframes flotarQR {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.08);
-    }
-}
-
-@keyframes girarQR {
-    0%, 100% {
-        transform: rotate(-10deg);
-    }
-    50% {
-        transform: rotate(5deg);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation: none !important;
-        transition: none !important;
-    }
-}
-
-/* SUBRAYADO ANIMADO DEL MENÚ */
-
-.enlace {
-    position: relative;
-    padding-bottom: 7px;
-}
-
-.enlace::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    background: #f5ca24;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform .3s ease;
-}
-
-.enlace:hover::after,
-.enlace.activo::after {
-    transform: scaleX(1);
-}
-.qr-imagen {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-    margin: auto;
-}
-
-.qr-cargando {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #8992a5;
-    font-size: 12px;
-    font-weight: 900;
-    text-align: center;
-}
-
-
 </style>
