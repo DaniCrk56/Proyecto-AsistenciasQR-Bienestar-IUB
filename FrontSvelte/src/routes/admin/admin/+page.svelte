@@ -4,17 +4,18 @@
 
     let seccionActual = 'inicio';
     let eventos = [];
-let cargandoEventos = false;
-let mensajeEventos = '';
-let usuario = {
-    nombres: '',
-    apellidos: '',
-    numero_documento: '',
-    tipo_documento: '',
-    correo_institucional: '',
-    programa: '',
-    id_rol: ''
-};
+    let cargandoEventos = false;
+    let mensajeEventos = '';
+
+    let usuario = {
+        nombres: '',
+        apellidos: '',
+        numero_documento: '',
+        tipo_documento: '',
+        correo_institucional: '',
+        programa: '',
+        id_rol: ''
+    };
 
     let lugares = [];
     let categorias = [];
@@ -23,21 +24,21 @@ let usuario = {
     let cargandoOpciones = false;
     let mensajeOpciones = '';
 
-let guardandoActividad = false;
-let mensajeActividad = '';
-let errorActividad = false;
+    let guardandoActividad = false;
+    let mensajeActividad = '';
+    let errorActividad = false;
 
-let nuevaActividad = {
-    nombre: '',
-    descripcion: '',
-    fecha: '',
-    hora_inicio: '',
-    hora_fin: '',
-    cupo_maximo: '',
-    id_lugar: '',
-    id_categoria: '',
-    id_estado_actividad: ''
-};
+    let nuevaActividad = {
+        nombre: '',
+        descripcion: '',
+        fecha: '',
+        hora_inicio: '',
+        hora_fin: '',
+        cupo_maximo: '',
+        id_lugar: '',
+        id_categoria: '',
+        id_estado_actividad: ''
+    };
 
     const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
 
@@ -49,33 +50,36 @@ let nuevaActividad = {
         { id: 'asistencia', nombre: 'Asistencias', icono: '☷' },
         { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
     ];
-function cargarUsuario() {
-    const usuarioGuardado = localStorage.getItem('usuario');
 
-    if (usuarioGuardado) {
-        usuario = JSON.parse(usuarioGuardado);
-    }
-}
-onMount(() => {
-    cargarUsuario();
-});
+    function cargarUsuario() {
+        const usuarioGuardado = localStorage.getItem('usuario');
 
-function cambiarSeccion(seccion) {
-    seccionActual = seccion;
-
-    if (seccion === 'crear') {
-        cargarOpciones();
+        if (usuarioGuardado) {
+            usuario = JSON.parse(usuarioGuardado);
+        }
     }
 
-    if (seccion === 'eventos') {
-        cargarEventos();
-    }
-}
+    onMount(() => {
+        cargarUsuario();
+    });
 
-function cerrarSesion() {
-    localStorage.removeItem('usuario');
-    window.location.href = '/';
-}
+    function cambiarSeccion(seccion) {
+        seccionActual = seccion;
+
+        if (seccion === 'crear') {
+            cargarOpciones();
+        }
+
+        if (seccion === 'eventos' || seccion === 'scanner') {
+            cargarEventos();
+        }
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('usuario');
+        window.location.href = '/';
+    }
+
     async function cargarOpciones() {
         cargandoOpciones = true;
         mensajeOpciones = '';
@@ -99,84 +103,87 @@ function cerrarSesion() {
 
         cargandoOpciones = false;
     }
-async function cargarEventos() {
-    cargandoEventos = true;
-    mensajeEventos = '';
 
-    try {
-        const respuesta = await fetch(URL_BASE + '/actividades/');
+    async function cargarEventos() {
+        cargandoEventos = true;
+        mensajeEventos = '';
 
-        if (!respuesta.ok) {
-            throw new Error('No se pudieron cargar los eventos.');
+        try {
+            const respuesta = await fetch(URL_BASE + '/actividades/');
+
+            if (!respuesta.ok) {
+                throw new Error('No se pudieron cargar los eventos.');
+            }
+
+            eventos = await respuesta.json();
+
+        } catch (error) {
+            mensajeEventos = error.message || 'Error al cargar los eventos.';
         }
 
-        eventos = await respuesta.json();
-
-    } catch (error) {
-        mensajeEventos = error.message || 'Error al cargar los eventos.';
+        cargandoEventos = false;
     }
 
-    cargandoEventos = false;
-}
-async function crearActividad(evento) {
-    evento.preventDefault();
+    async function crearActividad(evento) {
+        evento.preventDefault();
 
-    mensajeActividad = '';
-    errorActividad = false;
-    guardandoActividad = true;
+        mensajeActividad = '';
+        errorActividad = false;
+        guardandoActividad = true;
 
-    try {
-        const respuesta = await fetch(URL_BASE + '/actividades/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                nombre: nuevaActividad.nombre,
-                descripcion: nuevaActividad.descripcion,
-                fecha: nuevaActividad.fecha,
-                hora_inicio: nuevaActividad.hora_inicio,
-                hora_fin: nuevaActividad.hora_fin,
-                cupo_maximo: Number(nuevaActividad.cupo_maximo),
-                id_lugar: Number(nuevaActividad.id_lugar),
-                id_categoria: Number(nuevaActividad.id_categoria),
-                id_estado_actividad: Number(nuevaActividad.id_estado_actividad)
-            })
-        });
+        try {
+            const respuesta = await fetch(URL_BASE + '/actividades/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nombre: nuevaActividad.nombre,
+                    descripcion: nuevaActividad.descripcion,
+                    fecha: nuevaActividad.fecha,
+                    hora_inicio: nuevaActividad.hora_inicio,
+                    hora_fin: nuevaActividad.hora_fin,
+                    cupo_maximo: Number(nuevaActividad.cupo_maximo),
+                    id_lugar: Number(nuevaActividad.id_lugar),
+                    id_categoria: Number(nuevaActividad.id_categoria),
+                    id_estado_actividad: Number(nuevaActividad.id_estado_actividad)
+                })
+            });
 
-        const datos = await respuesta.json();
+            const datos = await respuesta.json();
 
-        if (!respuesta.ok) {
-            throw new Error(datos.detail || 'No se pudo registrar el evento.');
+            if (!respuesta.ok) {
+                throw new Error(datos.detail || 'No se pudo registrar el evento.');
+            }
+
+            mensajeActividad = '¡Evento registrado correctamente!';
+
+            await cargarEventos();
+
+            nuevaActividad = {
+                nombre: '',
+                descripcion: '',
+                fecha: '',
+                hora_inicio: '',
+                hora_fin: '',
+                cupo_maximo: '',
+                id_lugar: '',
+                id_categoria: '',
+                id_estado_actividad: ''
+            };
+
+        } catch (error) {
+            errorActividad = true;
+            mensajeActividad = error.message || 'Ocurrió un error al registrar el evento.';
         }
 
-        mensajeActividad = '¡Evento registrado correctamente!';
-await cargarEventos();
-        nuevaActividad = {
-            nombre: '',
-            descripcion: '',
-            fecha: '',
-            hora_inicio: '',
-            hora_fin: '',
-            cupo_maximo: '',
-            id_lugar: '',
-            id_categoria: '',
-            id_estado_actividad: ''
-        };
-
-    } catch (error) {
-        errorActividad = true;
-        mensajeActividad = error.message || 'Ocurrió un error al registrar el evento.';
+        guardandoActividad = false;
     }
-
-    guardandoActividad = false;
-}
 
     function abrirScanner(evento) {
         window.location.href = '/admin/scanner?id_evento=' + evento.id;
     }
 </script>
-
 
 <svelte:head>
     <title>Panel administrativo | Bienestar Universitario</title>
@@ -215,17 +222,16 @@ await cargarEventos();
         <div class="parte-inferior">
             <div class="separador"></div>
 
+            <div class="usuario">
+                <div class="avatar">
+                    {usuario.nombres ? usuario.nombres.charAt(0).toUpperCase() : 'A'}
+                </div>
 
-           <div class="usuario">
-    <div class="avatar">
-        {usuario.nombres ? usuario.nombres.charAt(0).toUpperCase() : 'A'}
-    </div>
-
-    <div>
-        <strong>{usuario.nombres || 'Administrador'} {usuario.apellidos || ''}</strong>
-        <span>Panel administrativo</span>
-    </div>
-</div>
+                <div>
+                    <strong>{usuario.nombres || 'Administrador'} {usuario.apellidos || ''}</strong>
+                    <span>Panel administrativo</span>
+                </div>
+            </div>
         </div>
     </aside>
 
@@ -336,245 +342,259 @@ await cargarEventos();
                 <p>Busca la actividad correspondiente y abre su lector de códigos QR.</p>
             </section>
 
-            <div class="tarjetas-eventos">
-                {#each eventos as evento}
-                    <article class="tarjeta-evento">
-                        <div class="imagen-evento">
-                            <span>EVENTO UNIVERSITARIO</span>
-                            <div class="imagen-decoracion">✦</div>
-                        </div>
+            {#if cargandoEventos}
+                <p>Cargando eventos...</p>
+            {:else if mensajeEventos}
+                <p class="error-mensaje">{mensajeEventos}</p>
+            {:else if eventos.length === 0}
+                <section class="seccion-vacia">
+                    <div class="vacio-icono">▦</div>
+                    <h2>No hay eventos registrados</h2>
+                    <p>Primero debes crear un evento.</p>
+                </section>
+            {:else}
+                <div class="tarjetas-eventos">
+                    {#each eventos as evento}
+                        <article class="tarjeta-evento">
+                            <div class="imagen-evento">
+                                <span>EVENTO UNIVERSITARIO</span>
+                                <div class="imagen-decoracion">✦</div>
+                            </div>
 
-                        <div class="informacion-evento">
-                            <span class="categoria">{evento.categoria}</span>
-                            <h3>{evento.nombre}</h3>
+                            <div class="informacion-evento">
+                                <span class="categoria">Evento #{evento.id}</span>
+                                <h3>{evento.nombre}</h3>
 
-                            <p>◷ {evento.fecha}</p>
-                            <p>◴ {evento.hora}</p>
-                            <p>⌖ {evento.lugar}</p>
+                                <p>◷ Fecha: {evento.fecha}</p>
+                                <p>◴ Hora: {evento.hora_inicio.slice(0, 5)} - {evento.hora_fin.slice(0, 5)}</p>
 
-                            <button class="boton-escanear" onclick={() => abrirScanner(evento)}>
-                                ▣ Escanear QR
-                            </button>
-                        </div>
-                    </article>
-                {/each}
-            </div>
+                                <button class="boton-escanear" onclick={() => abrirScanner(evento)}>
+                                    ▣ Escanear QR
+                                </button>
+                            </div>
+                        </article>
+                    {/each}
+                </div>
+            {/if}
 
+        {:else if seccionActual === 'crear'}
 
-{:else if seccionActual === 'crear'}
-
-    <section class="seccion">
-        <div class="encabezado-seccion">
-            <h2>Registrar nueva actividad</h2>
-            <p>Completa los datos para publicar un evento universitario.</p>
-        </div>
-
-        {#if cargandoOpciones}
-            <p>Cargando información...</p>
-        {:else if mensajeOpciones}
-            <p>{mensajeOpciones}</p>
-        {:else}
-            <form class="formulario-evento" onsubmit={crearActividad}>
-
-                <label>Nombre del evento</label>
-                <input bind:value={nuevaActividad.nombre} required placeholder="Nombre de la actividad">
-
-                <label>Descripción</label>
-                <textarea bind:value={nuevaActividad.descripcion} placeholder="Describe la actividad"></textarea>
-
-                <div class="campos-dobles">
-                    <div>
-                        <label>Fecha</label>
-                        <input type="date" bind:value={nuevaActividad.fecha} required>
-                    </div>
-
-                    <div>
-                        <label>Cupo máximo</label>
-                        <input type="number" min="1" bind:value={nuevaActividad.cupo_maximo} required>
-                    </div>
+            <section class="seccion">
+                <div class="encabezado-seccion">
+                    <h2>Registrar nueva actividad</h2>
+                    <p>Completa los datos para publicar un evento universitario.</p>
                 </div>
 
-                <div class="campos-dobles">
-                    <div>
-                        <label>Hora de inicio</label>
-                        <input type="time" bind:value={nuevaActividad.hora_inicio} required>
-                    </div>
+                {#if cargandoOpciones}
+                    <p>Cargando información...</p>
+                {:else if mensajeOpciones}
+                    <p class="error-mensaje">{mensajeOpciones}</p>
+                {:else}
+                    <form class="formulario-evento" onsubmit={crearActividad}>
 
-                    <div>
-                        <label>Hora de finalización</label>
-                        <input type="time" bind:value={nuevaActividad.hora_fin} required>
-                    </div>
-                </div>
+                        <label>Nombre del evento</label>
+                        <input bind:value={nuevaActividad.nombre} required placeholder="Nombre de la actividad">
 
-                <label>Lugar</label>
-                <select bind:value={nuevaActividad.id_lugar} required>
-                    <option value="">Selecciona un lugar</option>
-                    {#each lugares as lugar}
-                        <option value={lugar.id}>{lugar.nombre}</option>
-                    {/each}
-                </select>
+                        <label>Descripción</label>
+                        <textarea bind:value={nuevaActividad.descripcion} placeholder="Describe la actividad"></textarea>
 
-                <label>Categoría</label>
-                <select bind:value={nuevaActividad.id_categoria} required>
-                    <option value="">Selecciona una categoría</option>
-                    {#each categorias as categoria}
-                        <option value={categoria.id}>{categoria.nombre}</option>
-                    {/each}
-                </select>
+                        <div class="campos-dobles">
+                            <div>
+                                <label>Fecha</label>
+                                <input type="date" bind:value={nuevaActividad.fecha} required>
+                            </div>
 
-                <label>Estado de la actividad</label>
-                <select bind:value={nuevaActividad.id_estado_actividad} required>
-                    <option value="">Selecciona un estado</option>
-                    {#each estados as estado}
-                        <option value={estado.id}>{estado.nombre}</option>
-                    {/each}
-                </select>
+                            <div>
+                                <label>Cupo máximo</label>
+                                <input type="number" min="1" bind:value={nuevaActividad.cupo_maximo} required>
+                            </div>
+                        </div>
 
-                {#if mensajeActividad}
-                    <p class:error-mensaje={errorActividad} class:exito-mensaje={!errorActividad}>
-                        {mensajeActividad}
-                    </p>
+                        <div class="campos-dobles">
+                            <div>
+                                <label>Hora de inicio</label>
+                                <input type="time" bind:value={nuevaActividad.hora_inicio} required>
+                            </div>
+
+                            <div>
+                                <label>Hora de finalización</label>
+                                <input type="time" bind:value={nuevaActividad.hora_fin} required>
+                            </div>
+                        </div>
+
+                        <label>Lugar</label>
+                        <select bind:value={nuevaActividad.id_lugar} required>
+                            <option value="">Selecciona un lugar</option>
+                            {#each lugares as lugar}
+                                <option value={lugar.id}>{lugar.nombre}</option>
+                            {/each}
+                        </select>
+
+                        <label>Categoría</label>
+                        <select bind:value={nuevaActividad.id_categoria} required>
+                            <option value="">Selecciona una categoría</option>
+                            {#each categorias as categoria}
+                                <option value={categoria.id}>{categoria.nombre}</option>
+                            {/each}
+                        </select>
+
+                        <label>Estado de la actividad</label>
+                        <select bind:value={nuevaActividad.id_estado_actividad} required>
+                            <option value="">Selecciona un estado</option>
+                            {#each estados as estado}
+                                <option value={estado.id}>{estado.nombre}</option>
+                            {/each}
+                        </select>
+
+                        {#if mensajeActividad}
+                            <p class:error-mensaje={errorActividad} class:exito-mensaje={!errorActividad}>
+                                {mensajeActividad}
+                            </p>
+                        {/if}
+
+                        <button type="submit" disabled={guardandoActividad}>
+                            {guardandoActividad ? 'Guardando...' : '＋ Crear evento'}
+                        </button>
+
+                    </form>
                 {/if}
-
-                <button type="submit" disabled={guardandoActividad}>
-                    {guardandoActividad ? 'Guardando...' : '＋ Crear evento'}
-                </button>
-
-            </form>
-        {/if}
-    </section>
-
-
-{:else if seccionActual === 'eventos'}
-
-    <section class="seccion">
-        <div class="encabezado-seccion">
-            <h2>Eventos registrados</h2>
-            <p>Consulta las actividades universitarias que has creado.</p>
-        </div>
-
-        {#if cargandoEventos}
-
-            <p>Cargando eventos...</p>
-
-        {:else if mensajeEventos}
-
-            <p class="error-mensaje">{mensajeEventos}</p>
-
-        {:else if eventos.length === 0}
-
-            <section class="seccion-vacia">
-                <div class="vacio-icono">▦</div>
-                <h2>No hay eventos registrados</h2>
-                <p>Cuando crees una actividad, aparecerá aquí.</p>
             </section>
 
-        {:else}
+        {:else if seccionActual === 'eventos'}
 
-            <div class="tarjetas-eventos">
+            <section class="seccion">
+                <div class="encabezado-seccion">
+                    <h2>Eventos registrados</h2>
+                    <p>Consulta las actividades universitarias que has creado.</p>
+                </div>
 
-                {#each eventos as evento}
-                    <article class="tarjeta-evento">
+                {#if cargandoEventos}
 
-                        <div class="imagen-evento">
-                            <span>EVENTO UNIVERSITARIO</span>
-                            <div class="imagen-decoracion">✦</div>
-                        </div>
+                    <p>Cargando eventos...</p>
 
-                        <div class="informacion-evento">
+                {:else if mensajeEventos}
 
-                            <span class="categoria">
-                                Evento #{evento.id}
-                            </span>
+                    <p class="error-mensaje">{mensajeEventos}</p>
 
-                            <h3>{evento.nombre}</h3>
+                {:else if eventos.length === 0}
 
-                            <p>{evento.descripcion || 'Sin descripción disponible.'}</p>
+                    <section class="seccion-vacia">
+                        <div class="vacio-icono">▦</div>
+                        <h2>No hay eventos registrados</h2>
+                        <p>Cuando crees una actividad, aparecerá aquí.</p>
+                    </section>
 
-                            <p>◷ Fecha: {evento.fecha}</p>
+                {:else}
 
-                            <p>
-                                ◴ Horario: {evento.hora_inicio.slice(0, 5)}
-                                - {evento.hora_fin.slice(0, 5)}
-                            </p>
+                    <div class="tarjetas-eventos">
+                        {#each eventos as evento}
+                            <article class="tarjeta-evento">
 
-                            <p>♙ Cupos: {evento.cupo_maximo}</p>
+                                <div class="imagen-evento">
+                                    <span>EVENTO UNIVERSITARIO</span>
+                                    <div class="imagen-decoracion">✦</div>
+                                </div>
 
-                            <p>⌖ Lugar ID: {evento.id_lugar}</p>
+                                <div class="informacion-evento">
 
-                            <p>▦ Categoría ID: {evento.id_categoria}</p>
+                                    <span class="categoria">
+                                        Evento #{evento.id}
+                                    </span>
 
-                            <p>
-                                Estado:
-                                {evento.estado ? 'Activo' : 'Inactivo'}
-                            </p>
+                                    <h3>{evento.nombre}</h3>
 
-                        </div>
+                                    <p>{evento.descripcion || 'Sin descripción disponible.'}</p>
 
-                    </article>
-                {/each}
+                                    <p>◷ Fecha: {evento.fecha}</p>
 
-            </div>
+                                    <p>
+                                        ◴ Horario: {evento.hora_inicio.slice(0, 5)}
+                                        - {evento.hora_fin.slice(0, 5)}
+                                    </p>
+
+                                    <p>♙ Cupos: {evento.cupo_maximo}</p>
+
+                                    <p>⌖ Lugar ID: {evento.id_lugar}</p>
+
+                                    <p>▦ Categoría ID: {evento.id_categoria}</p>
+
+                                    <p>
+                                        Estado:
+                                        {evento.estado ? 'Activo' : 'Inactivo'}
+                                    </p>
+
+                                </div>
+                            </article>
+                        {/each}
+                    </div>
+
+                {/if}
+            </section>
+
+        {:else if seccionActual === 'perfil'}
+
+            <section class="seccion-vacia perfil">
+
+                <div class="vacio-icono">♙</div>
+
+                <h2>Mi perfil</h2>
+                <p>Información de tu cuenta institucional.</p>
+
+                <div class="datos-perfil">
+
+                    <div class="dato-perfil">
+                        <span>Nombres</span>
+                        <strong>{usuario.nombres || 'No disponible'}</strong>
+                    </div>
+
+                    <div class="dato-perfil">
+                        <span>Apellidos</span>
+                        <strong>{usuario.apellidos || 'No disponible'}</strong>
+                    </div>
+
+                    <div class="dato-perfil">
+                        <span>Tipo de documento</span>
+                        <strong>{usuario.tipo_documento || 'No disponible'}</strong>
+                    </div>
+
+                    <div class="dato-perfil">
+                        <span>Número de documento</span>
+                        <strong>{usuario.numero_documento || 'No disponible'}</strong>
+                    </div>
+
+                    <div class="dato-perfil">
+                        <span>Correo institucional</span>
+                        <strong>{usuario.correo_institucional || 'No disponible'}</strong>
+                    </div>
+
+                    <div class="dato-perfil">
+                        <span>Programa</span>
+                        <strong>{usuario.programa || 'No disponible'}</strong>
+                    </div>
+
+                    <div class="dato-perfil">
+                        <span>Rol</span>
+                        <strong>{usuario.id_rol === 1 ? 'Administrador' : 'Usuario'}</strong>
+                    </div>
+
+                </div>
+
+                <button class="boton-cerrar-sesion" onclick={cerrarSesion}>
+                    <span>↪</span>
+                    Cerrar sesión
+                </button>
+
+            </section>
+
+        {:else if seccionActual === 'asistencia'}
+
+            <section class="seccion-vacia">
+                <div class="vacio-icono">☷</div>
+                <h2>Gestión de asistencias</h2>
+                <p>Este apartado estará disponible cuando implementemos la consulta de asistencias.</p>
+            </section>
 
         {/if}
-    </section>
-
-  
-<section class="seccion-vacia perfil">
-
-    <div class="vacio-icono">♙</div>
-
-    <h2>Mi perfil</h2>
-    <p>Información de tu cuenta institucional.</p>
-
-    <div class="datos-perfil">
-
-        <div class="dato-perfil">
-            <span>Nombres</span>
-            <strong>{usuario.nombres || 'No disponible'}</strong>
-        </div>
-
-        <div class="dato-perfil">
-            <span>Apellidos</span>
-            <strong>{usuario.apellidos || 'No disponible'}</strong>
-        </div>
-
-        <div class="dato-perfil">
-            <span>Tipo de documento</span>
-            <strong>{usuario.tipo_documento || 'No disponible'}</strong>
-        </div>
-
-        <div class="dato-perfil">
-            <span>Número de documento</span>
-            <strong>{usuario.numero_documento || 'No disponible'}</strong>
-        </div>
-
-        <div class="dato-perfil">
-            <span>Correo institucional</span>
-            <strong>{usuario.correo_institucional || 'No disponible'}</strong>
-        </div>
-
-        <div class="dato-perfil">
-            <span>Programa</span>
-            <strong>{usuario.programa || 'No disponible'}</strong>
-        </div>
-
-        <div class="dato-perfil">
-            <span>Rol</span>
-            <strong>{usuario.id_rol === 1 ? 'Administrador' : 'Usuario'}</strong>
-        </div>
-
-    </div>
-
-    <button class="boton-cerrar-sesion" onclick={cerrarSesion}>
-        <span>↪</span>
-        Cerrar sesión
-    </button>
-
-</section>
-
-
-{/if}
 
     </main>
 </div>
@@ -1048,77 +1068,131 @@ await cargarEventos();
         font-size: 13px;
     }
 
-.formulario-evento {
-    background: white;
-    padding: 30px;
-    border-radius: 18px;
-    max-width: 850px;
-    box-shadow: 0 5px 20px #15264a08;
-}
+    .formulario-evento {
+        background: white;
+        padding: 30px;
+        border-radius: 18px;
+        max-width: 850px;
+        box-shadow: 0 5px 20px #15264a08;
+    }
 
-.formulario-evento label {
-    display: block;
-    margin: 18px 0 7px;
-    font-size: 13px;
-    font-weight: 900;
-    color: #34415f;
-}
+    .formulario-evento label {
+        display: block;
+        margin: 18px 0 7px;
+        font-size: 13px;
+        font-weight: 900;
+        color: #34415f;
+    }
 
-.formulario-evento input,
-.formulario-evento textarea,
-.formulario-evento select {
-    width: 100%;
-    padding: 13px;
-    border: 1px solid #dfe5ef;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 13px;
-    outline: none;
-}
+    .formulario-evento input,
+    .formulario-evento textarea,
+    .formulario-evento select {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #dfe5ef;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
+    }
 
-.formulario-evento input:focus,
-.formulario-evento textarea:focus,
-.formulario-evento select:focus {
-    border-color: #0785b6;
-}
+    .formulario-evento input:focus,
+    .formulario-evento textarea:focus,
+    .formulario-evento select:focus {
+        border-color: #0785b6;
+    }
 
-.formulario-evento textarea {
-    min-height: 100px;
-    resize: vertical;
-}
+    .formulario-evento textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
 
-.campos-dobles {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-}
+    .campos-dobles {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
 
-.formulario-evento button {
-    width: 100%;
-    margin-top: 25px;
-    padding: 15px;
-    background: #0785b6;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-family: inherit;
-    font-weight: 1000;
-    cursor: pointer;
-}
+    .formulario-evento button {
+        width: 100%;
+        margin-top: 25px;
+        padding: 15px;
+        background: #0785b6;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-weight: 1000;
+        cursor: pointer;
+    }
 
-.formulario-evento button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+    .formulario-evento button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 
-.error-mensaje {
-    color: #d93636;
-}
+    .error-mensaje {
+        color: #d93636;
+    }
 
-.exito-mensaje {
-    color: #159a65;
-}
+    .exito-mensaje {
+        color: #159a65;
+    }
 
+    .boton-cerrar-sesion {
+        margin-top: 25px;
+        padding: 13px 25px;
+        border: none;
+        border-radius: 10px;
+        background: #0785b6;
+        color: white;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .boton-cerrar-sesion:hover {
+        background: #056b91;
+        transform: translateY(-2px);
+    }
+
+    .boton-cerrar-sesion span {
+        margin-right: 8px;
+        font-size: 17px;
+    }
+
+    .datos-perfil {
+        max-width: 650px;
+        margin: 30px auto 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        text-align: left;
+    }
+
+    .dato-perfil {
+        background: #f5f8fc;
+        padding: 17px;
+        border-radius: 12px;
+        border: 1px solid #e7edf5;
+    }
+
+    .dato-perfil span {
+        display: block;
+        color: #8995a9;
+        font-size: 11px;
+        font-weight: 800;
+        margin-bottom: 7px;
+    }
+
+    .dato-perfil strong {
+        display: block;
+        color: #18233f;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
 
     @media (max-width: 1100px) {
         .estadisticas {
@@ -1181,63 +1255,11 @@ await cargarEventos();
             display: none;
         }
     }
-.boton-cerrar-sesion {
-    margin-top: 25px;
-    padding: 13px 25px;
-    border: none;
-    border-radius: 10px;
-    background: #0785b6;
-    color: white;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 900;
-    cursor: pointer;
-    transition: 0.2s;
-}
 
-.boton-cerrar-sesion:hover {
-    background: #056b91;
-    transform: translateY(-2px);
-}
-
-.boton-cerrar-sesion span {
-    margin-right: 8px;
-    font-size: 17px;
-}
-.datos-perfil {
-    max-width: 650px;
-    margin: 30px auto 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    text-align: left;
-}
-
-.dato-perfil {
-    background: #f5f8fc;
-    padding: 17px;
-    border-radius: 12px;
-    border: 1px solid #e7edf5;
-}
-
-.dato-perfil span {
-    display: block;
-    color: #8995a9;
-    font-size: 11px;
-    font-weight: 800;
-    margin-bottom: 7px;
-}
-
-.dato-perfil strong {
-    display: block;
-    color: #18233f;
-    font-size: 13px;
-    overflow-wrap: anywhere;
-}
-
-@media (max-width: 600px) {
-    .datos-perfil {
-        grid-template-columns: 1fr;
+    @media (max-width: 600px) {
+        .datos-perfil,
+        .campos-dobles {
+            grid-template-columns: 1fr;
+        }
     }
-}
 </style>
