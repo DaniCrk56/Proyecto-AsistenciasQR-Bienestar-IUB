@@ -4,6 +4,15 @@
 
     let seccionActual = 'inicio';
     let eventos = [];
+let usuario = {
+    nombres: '',
+    apellidos: '',
+    numero_documento: '',
+    tipo_documento: '',
+    correo_institucional: '',
+    programa: '',
+    id_rol: ''
+};
 
     let lugares = [];
     let categorias = [];
@@ -38,6 +47,16 @@ let nuevaActividad = {
         { id: 'asistencia', nombre: 'Asistencias', icono: '☷' },
         { id: 'perfil', nombre: 'Mi perfil', icono: '♙' }
     ];
+function cargarUsuario() {
+    const usuarioGuardado = localStorage.getItem('usuario');
+
+    if (usuarioGuardado) {
+        usuario = JSON.parse(usuarioGuardado);
+    }
+}
+onMount(() => {
+    cargarUsuario();
+});
 
 function cambiarSeccion(seccion) {
     seccionActual = seccion;
