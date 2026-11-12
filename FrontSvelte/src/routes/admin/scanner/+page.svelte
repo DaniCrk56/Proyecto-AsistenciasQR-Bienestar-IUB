@@ -206,14 +206,7 @@ function cerrarSesion() {
         font-weight: 900;
     }
 
-    .estado {
-        background: #1e3157;
-        border-radius: 20px;
-        padding: 10px 15px;
-        font-size: 10px;
-        font-weight: 1000;
-        letter-spacing: 1px;
-    }
+  
 
     .estado span,
     .esperando span,
@@ -641,16 +634,18 @@ function cerrarSesion() {
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 12px 15px;
     background: transparent;
-    border: none;
     color: white;
     font-family: inherit;
-    font-size: inherit;
     text-align: left;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 10px;
+    font-weight: 1000;
+    letter-spacing: 1px;
 }
 
 .cerrar::after {
