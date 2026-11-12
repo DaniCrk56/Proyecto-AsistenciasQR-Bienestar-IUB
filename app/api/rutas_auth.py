@@ -165,6 +165,35 @@ def validar_token(token: str = Depends(oauth2_scheme)):
 
     return username
 
+def validar_administrador(token: str = Depends(oauth2_scheme)):
+
+    exception_auth = HTTPException(
+        status_code=401,
+        detail="Token inválido o expirado"
+    )
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        usuario_id = payload.get("usuario_id")
+        id_rol = payload.get("id_rol")
+
+        if usuario_id is None or id_rol is None:
+            raise exception_auth
+
+        if int(id_rol) != 1:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permisos de administrador"
+            )
+
+        return {
+            "usuario_id": int(usuario_id),
+            "id_rol": int(id_rol)
+        }
+
+    except JWTError:
+        raise exception_auth
 
 @router.get("/perfil")
 def ver_perfil_protegido(usuario_actual: str = Depends(validar_token)):
