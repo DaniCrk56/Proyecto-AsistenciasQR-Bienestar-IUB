@@ -4,6 +4,8 @@
 
     let seccionActual = 'inicio';
     let eventos = [];
+let cargandoEventos = false;
+let mensajeEventos = '';
 let usuario = {
     nombres: '',
     apellidos: '',
@@ -64,6 +66,10 @@ function cambiarSeccion(seccion) {
     if (seccion === 'crear') {
         cargarOpciones();
     }
+
+    if (seccion === 'eventos') {
+        cargarEventos();
+    }
 }
 
 function cerrarSesion() {
@@ -93,6 +99,25 @@ function cerrarSesion() {
 
         cargandoOpciones = false;
     }
+async function cargarEventos() {
+    cargandoEventos = true;
+    mensajeEventos = '';
+
+    try {
+        const respuesta = await fetch(URL_BASE + '/actividades/');
+
+        if (!respuesta.ok) {
+            throw new Error('No se pudieron cargar los eventos.');
+        }
+
+        eventos = await respuesta.json();
+
+    } catch (error) {
+        mensajeEventos = error.message || 'Error al cargar los eventos.';
+    }
+
+    cargandoEventos = false;
+}
 async function crearActividad(evento) {
     evento.preventDefault();
 
@@ -126,6 +151,7 @@ async function crearActividad(evento) {
         }
 
         mensajeActividad = '¡Evento registrado correctamente!';
+await cargarEventos();
         nuevaActividad = {
             nombre: '',
             descripcion: '',
@@ -419,23 +445,79 @@ async function crearActividad(evento) {
     </section>
 
 
-        {:else if seccionActual === 'eventos'}
+{:else if seccionActual === 'eventos'}
+
+    <section class="seccion">
+        <div class="encabezado-seccion">
+            <h2>Eventos registrados</h2>
+            <p>Consulta las actividades universitarias que has creado.</p>
+        </div>
+
+        {#if cargandoEventos}
+
+            <p>Cargando eventos...</p>
+
+        {:else if mensajeEventos}
+
+            <p class="error-mensaje">{mensajeEventos}</p>
+
+        {:else if eventos.length === 0}
 
             <section class="seccion-vacia">
                 <div class="vacio-icono">▦</div>
-                <h2>Gestionar eventos</h2>
-                <p>Aquí podrás consultar, editar y administrar las actividades universitarias.</p>
+                <h2>No hay eventos registrados</h2>
+                <p>Cuando crees una actividad, aparecerá aquí.</p>
             </section>
 
-        {:else if seccionActual === 'asistencia'}
+        {:else}
 
-            <section class="seccion-vacia">
-                <div class="vacio-icono">☷</div>
-                <h2>Asistencias</h2>
-                <p>Aquí integraremos tu apartado de consulta de asistencias.</p>
-            </section>
+            <div class="tarjetas-eventos">
 
-   {:else}
+                {#each eventos as evento}
+                    <article class="tarjeta-evento">
+
+                        <div class="imagen-evento">
+                            <span>EVENTO UNIVERSITARIO</span>
+                            <div class="imagen-decoracion">✦</div>
+                        </div>
+
+                        <div class="informacion-evento">
+
+                            <span class="categoria">
+                                Evento #{evento.id}
+                            </span>
+
+                            <h3>{evento.nombre}</h3>
+
+                            <p>{evento.descripcion || 'Sin descripción disponible.'}</p>
+
+                            <p>◷ Fecha: {evento.fecha}</p>
+
+                            <p>
+                                ◴ Horario: {evento.hora_inicio.slice(0, 5)}
+                                - {evento.hora_fin.slice(0, 5)}
+                            </p>
+
+                            <p>♙ Cupos: {evento.cupo_maximo}</p>
+
+                            <p>⌖ Lugar ID: {evento.id_lugar}</p>
+
+                            <p>▦ Categoría ID: {evento.id_categoria}</p>
+
+                            <p>
+                                Estado:
+                                {evento.estado ? 'Activo' : 'Inactivo'}
+                            </p>
+
+                        </div>
+
+                    </article>
+                {/each}
+
+            </div>
+
+        {/if}
+    </section>
 
   
 <section class="seccion-vacia perfil">
