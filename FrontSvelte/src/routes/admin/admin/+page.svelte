@@ -6,10 +6,11 @@
     let eventos = [];
     let cargandoEventos = false;
     let mensajeEventos = '';
-let asistencias = [];
-let cargandoAsistencias = false;
-let mensajeAsistencias = '';
-let idEventoSeleccionado = '';
+
+    let asistencias = [];
+    let cargandoAsistencias = false;
+    let mensajeAsistencias = '';
+    let idEventoSeleccionado = '';
 
     let usuario = {
         nombres: '',
@@ -67,17 +68,21 @@ let idEventoSeleccionado = '';
         cargarUsuario();
     });
 
-   function cambiarSeccion(seccion) {
-    seccionActual = seccion;
+    function cambiarSeccion(seccion) {
+        seccionActual = seccion;
 
-    if (seccion === 'crear') {
-        cargarOpciones();
-    }
+        if (seccion === 'crear') {
+            cargarOpciones();
+        }
 
-    if (seccion === 'eventos' || seccion === 'scanner' || seccion === 'asistencia') {
-        cargarEventos();
+        if (
+            seccion === 'eventos' ||
+            seccion === 'scanner' ||
+            seccion === 'asistencia'
+        ) {
+            cargarEventos();
+        }
     }
-}
 
     function cerrarSesion() {
         localStorage.removeItem('usuario');
@@ -93,7 +98,11 @@ let idEventoSeleccionado = '';
             const respuestaCategorias = await fetch(URL_BASE + '/categorias-actividad/');
             const respuestaEstados = await fetch(URL_BASE + '/estados-actividad/');
 
-            if (!respuestaLugares.ok || !respuestaCategorias.ok || !respuestaEstados.ok) {
+            if (
+                !respuestaLugares.ok ||
+                !respuestaCategorias.ok ||
+                !respuestaEstados.ok
+            ) {
                 throw new Error('No se pudieron cargar las opciones.');
             }
 
@@ -128,48 +137,47 @@ let idEventoSeleccionado = '';
         cargandoEventos = false;
     }
 
-async function cargarAsistencias(idEvento) {
-
-    if (!idEvento) {
-        asistencias = [];
-        mensajeAsistencias = '';
-        return;
-    }
-
-    cargandoAsistencias = true;
-    mensajeAsistencias = '';
-    asistencias = [];
-
-    try {
-
-        const token = localStorage.getItem('token');
-
-        const respuesta = await fetch(
-            URL_BASE + '/asistencias/evento/' + idEvento,
-            {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            }
-        );
-
-        const datos = await respuesta.json();
-
-        if (!respuesta.ok) {
-            throw new Error(datos.detail || 'No se pudieron consultar las asistencias.');
+    async function cargarAsistencias(idEvento) {
+        if (!idEvento) {
+            asistencias = [];
+            mensajeAsistencias = '';
+            return;
         }
 
-        asistencias = datos;
+        cargandoAsistencias = true;
+        mensajeAsistencias = '';
+        asistencias = [];
 
-    } catch (error) {
+        try {
+            const token = localStorage.getItem('token');
 
-        mensajeAsistencias = error.message || 'Error al consultar las asistencias.';
+            const respuesta = await fetch(
+                URL_BASE + '/asistencias/evento/' + idEvento,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                }
+            );
 
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(
+                    datos.detail || 'No se pudieron consultar las asistencias.'
+                );
+            }
+
+            asistencias = datos;
+
+        } catch (error) {
+            mensajeAsistencias =
+                error.message || 'Error al consultar las asistencias.';
+        }
+
+        cargandoAsistencias = false;
     }
-
-    cargandoAsistencias = false;
-}
 
     async function crearActividad(evento) {
         evento.preventDefault();
@@ -221,7 +229,8 @@ async function cargarAsistencias(idEvento) {
 
         } catch (error) {
             errorActividad = true;
-            mensajeActividad = error.message || 'Ocurrió un error al registrar el evento.';
+            mensajeActividad =
+                error.message || 'Ocurrió un error al registrar el evento.';
         }
 
         guardandoActividad = false;
@@ -516,15 +525,12 @@ async function cargarAsistencias(idEvento) {
                 </div>
 
                 {#if cargandoEventos}
-
                     <p>Cargando eventos...</p>
 
                 {:else if mensajeEventos}
-
                     <p class="error-mensaje">{mensajeEventos}</p>
 
                 {:else if eventos.length === 0}
-
                     <section class="seccion-vacia">
                         <div class="vacio-icono">▦</div>
                         <h2>No hay eventos registrados</h2>
@@ -532,7 +538,6 @@ async function cargarAsistencias(idEvento) {
                     </section>
 
                 {:else}
-
                     <div class="tarjetas-eventos">
                         {#each eventos as evento}
                             <article class="tarjeta-evento">
@@ -574,7 +579,6 @@ async function cargarAsistencias(idEvento) {
                             </article>
                         {/each}
                     </div>
-
                 {/if}
             </section>
 
@@ -633,124 +637,124 @@ async function cargarAsistencias(idEvento) {
 
             </section>
 
-     
-{:else if seccionActual === 'asistencia'}
-
-    <section class="seccion">
-
-        <div class="encabezado-seccion">
-            <h2>Gestión de asistencias</h2>
-            <p>Consulta los estudiantes que asistieron a cada evento universitario.</p>
-        </div>
-
-        <div class="formulario-evento">
-
-            <label>Seleccionar evento</label>
-
-            <select
-                bind:value={idEventoSeleccionado}
-                onchange={() => cargarAsistencias(Number(idEventoSeleccionado))}
-            >
-                <option value="">Selecciona un evento</option>
-
-                {#each eventos as evento}
-                    <option value={evento.id}>
-                        {evento.nombre}
-                    </option>
-                {/each}
-
-            </select>
-
-        </div>
-
-        {#if cargandoEventos}
-
-            <p>Cargando eventos...</p>
-
-        {:else if mensajeEventos}
-
-            <p class="error-mensaje">{mensajeEventos}</p>
-
-        {:else if eventos.length === 0}
-
-            <section class="seccion-vacia">
-                <div class="vacio-icono">▦</div>
-                <h2>No hay eventos registrados</h2>
-                <p>Primero debes crear un evento.</p>
-            </section>
-
-        {:else if idEventoSeleccionado}
+        {:else if seccionActual === 'asistencia'}
 
             <section class="seccion">
 
                 <div class="encabezado-seccion">
-                    <h2>Estudiantes asistentes</h2>
-                    <p>Total de asistencias: {asistencias.length}</p>
+                    <h2>Gestión de asistencias</h2>
+                    <p>Consulta los estudiantes que asistieron a cada evento universitario.</p>
                 </div>
 
-                {#if cargandoAsistencias}
+                <div class="formulario-evento">
 
-                    <p>Consultando asistencias...</p>
+                    <label>Seleccionar evento</label>
 
-                {:else if mensajeAsistencias}
+                    <select
+                        bind:value={idEventoSeleccionado}
+                        onchange={() => cargarAsistencias(Number(idEventoSeleccionado))}
+                    >
+                        <option value="">Selecciona un evento</option>
 
-                    <p class="error-mensaje">{mensajeAsistencias}</p>
+                        {#each eventos as evento}
+                            <option value={evento.id}>
+                                {evento.nombre}
+                            </option>
+                        {/each}
 
-                {:else if asistencias.length === 0}
+                    </select>
+
+                </div>
+
+                {#if cargandoEventos}
+
+                    <p>Cargando eventos...</p>
+
+                {:else if mensajeEventos}
+
+                    <p class="error-mensaje">{mensajeEventos}</p>
+
+                {:else if eventos.length === 0}
 
                     <section class="seccion-vacia">
-                        <div class="vacio-icono">☷</div>
-                        <h2>Sin asistencias registradas</h2>
-                        <p>Todavía no hay estudiantes con asistencia registrada en este evento.</p>
+                        <div class="vacio-icono">▦</div>
+                        <h2>No hay eventos registrados</h2>
+                        <p>Primero debes crear un evento.</p>
                     </section>
 
-                {:else}
+                {:else if idEventoSeleccionado}
 
-                    <div class="tabla-asistencias">
+                    <section class="seccion">
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Estudiante</th>
-                                    <th>Documento</th>
-                                    <th>Fecha y hora</th>
-                                    <th>Método</th>
-                                </tr>
-                            </thead>
+                        <div class="encabezado-seccion">
+                            <h2>Estudiantes asistentes</h2>
+                            <p>Total de asistencias: {asistencias.length}</p>
+                        </div>
 
-                            <tbody>
-                                {#each asistencias as asistencia}
-                                    <tr>
-                                        <td>
-                                            {asistencia.nombres} {asistencia.apellidos}
-                                        </td>
+                        {#if cargandoAsistencias}
 
-                                        <td>{asistencia.numero_documento}</td>
+                            <p>Consultando asistencias...</p>
 
-                                        <td>
-                                            {new Date(asistencia.fecha_asistencia).toLocaleString('es-CO')}
-                                        </td>
+                        {:else if mensajeAsistencias}
 
-                                        <td>
-                                            <span class="metodo-qr">
-                                                {asistencia.metodo}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                {/each}
-                            </tbody>
-                        </table>
+                            <p class="error-mensaje">{mensajeAsistencias}</p>
 
-                    </div>
+                        {:else if asistencias.length === 0}
+
+                            <section class="seccion-vacia">
+                                <div class="vacio-icono">☷</div>
+                                <h2>Sin asistencias registradas</h2>
+                                <p>Todavía no hay estudiantes con asistencia registrada en este evento.</p>
+                            </section>
+
+                        {:else}
+
+                            <div class="tabla-asistencias">
+
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Estudiante</th>
+                                            <th>Documento</th>
+                                            <th>Fecha y hora</th>
+                                            <th>Método</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {#each asistencias as asistencia}
+                                            <tr>
+                                                <td>
+                                                    {asistencia.nombres} {asistencia.apellidos}
+                                                </td>
+
+                                                <td>{asistencia.numero_documento}</td>
+
+                                                <td>
+                                                    {new Date(asistencia.fecha_asistencia).toLocaleString('es-CO')}
+                                                </td>
+
+                                                <td>
+                                                    <span class="metodo-qr">
+                                                        {asistencia.metodo}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {/each}
+                                    </tbody>
+                                </table>
+
+                            </div>
+
+                        {/if}
+
+                    </section>
 
                 {/if}
 
             </section>
 
         {/if}
-
-    </section>
-
 
     </main>
 </div>
@@ -1419,45 +1423,45 @@ async function cargarAsistencias(idEvento) {
         }
     }
 
-.tabla-asistencias {
-    width: 100%;
-    overflow-x: auto;
-    background: white;
-    border-radius: 15px;
-    margin-top: 20px;
-    box-shadow: 0 5px 20px #15264a08;
-}
+    .tabla-asistencias {
+        width: 100%;
+        overflow-x: auto;
+        background: white;
+        border-radius: 15px;
+        margin-top: 20px;
+        box-shadow: 0 5px 20px #15264a08;
+    }
 
-.tabla-asistencias table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 650px;
-}
+    .tabla-asistencias table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
 
-.tabla-asistencias th,
-.tabla-asistencias td {
-    padding: 16px;
-    text-align: left;
-    border-bottom: 1px solid #edf0f5;
-    font-size: 12px;
-}
+    .tabla-asistencias th,
+    .tabla-asistencias td {
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #edf0f5;
+        font-size: 12px;
+    }
 
-.tabla-asistencias th {
-    background: #f5f8fc;
-    color: #34415f;
-    font-weight: 1000;
-}
+    .tabla-asistencias th {
+        background: #f5f8fc;
+        color: #34415f;
+        font-weight: 1000;
+    }
 
-.tabla-asistencias td {
-    color: #66738a;
-}
+    .tabla-asistencias td {
+        color: #66738a;
+    }
 
-.metodo-qr {
-    background: #e2f8ed;
-    color: #159a65;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 1000;
-}
+    .metodo-qr {
+        background: #e2f8ed;
+        color: #159a65;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 1000;
+    }
 </style>
