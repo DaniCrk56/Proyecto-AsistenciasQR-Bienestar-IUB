@@ -434,16 +434,60 @@ async function crearActividad(evento) {
 
    {:else}
 
-    <section class="seccion-vacia">
-        <div class="vacio-icono">♙</div>
-        <h2>Mi perfil</h2>
-        <p>Información del administrador.</p>
+  
+<section class="seccion-vacia perfil">
 
-        <button class="boton-cerrar-sesion" onclick={cerrarSesion}>
-            <span>↪</span>
-            Cerrar sesión
-        </button>
-    </section>
+    <div class="vacio-icono">♙</div>
+
+    <h2>Mi perfil</h2>
+    <p>Información de tu cuenta institucional.</p>
+
+    <div class="datos-perfil">
+
+        <div class="dato-perfil">
+            <span>Nombres</span>
+            <strong>{usuario.nombres || 'No disponible'}</strong>
+        </div>
+
+        <div class="dato-perfil">
+            <span>Apellidos</span>
+            <strong>{usuario.apellidos || 'No disponible'}</strong>
+        </div>
+
+        <div class="dato-perfil">
+            <span>Tipo de documento</span>
+            <strong>{usuario.tipo_documento || 'No disponible'}</strong>
+        </div>
+
+        <div class="dato-perfil">
+            <span>Número de documento</span>
+            <strong>{usuario.numero_documento || 'No disponible'}</strong>
+        </div>
+
+        <div class="dato-perfil">
+            <span>Correo institucional</span>
+            <strong>{usuario.correo_institucional || 'No disponible'}</strong>
+        </div>
+
+        <div class="dato-perfil">
+            <span>Programa</span>
+            <strong>{usuario.programa || 'No disponible'}</strong>
+        </div>
+
+        <div class="dato-perfil">
+            <span>Rol</span>
+            <strong>{usuario.id_rol === 1 ? 'Administrador' : 'Usuario'}</strong>
+        </div>
+
+    </div>
+
+    <button class="boton-cerrar-sesion" onclick={cerrarSesion}>
+        <span>↪</span>
+        Cerrar sesión
+    </button>
+
+</section>
+
 
 {/if}
 
@@ -1074,5 +1118,41 @@ async function crearActividad(evento) {
 .boton-cerrar-sesion span {
     margin-right: 8px;
     font-size: 17px;
+}
+.datos-perfil {
+    max-width: 650px;
+    margin: 30px auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    text-align: left;
+}
+
+.dato-perfil {
+    background: #f5f8fc;
+    padding: 17px;
+    border-radius: 12px;
+    border: 1px solid #e7edf5;
+}
+
+.dato-perfil span {
+    display: block;
+    color: #8995a9;
+    font-size: 11px;
+    font-weight: 800;
+    margin-bottom: 7px;
+}
+
+.dato-perfil strong {
+    display: block;
+    color: #18233f;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+    .datos-perfil {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
