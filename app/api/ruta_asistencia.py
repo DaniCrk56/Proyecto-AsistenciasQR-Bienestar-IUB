@@ -1,9 +1,16 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+
 from app.models.asistencia import Asistencia
 from app.repositories.asistencia_repo import AsistenciaRepository
+from app.api.ruta_auth import validar_administrador
 
 router = APIRouter(prefix="/asistencias", tags=["Gestión de Asistencias"])
 repo = AsistenciaRepository()
+
+class DatosEscaneoQR(BaseModel):
+    codigo_qr: str
+    id_evento: int
 
 @router.get("/")
 def listar_asistencias():
@@ -34,3 +41,38 @@ def actualizar_asistencia(asistencia_id: int, asistencia: Asistencia):
     if not exito:
         raise HTTPException(status_code=404, detail="Asistencia no encontrada")
     return {"mensaje": "Asistencia actualizada correctamente"}
+
+@router.post("/escanear")
+def escanear_qr(
+    datos: DatosEscaneoQR,
+    administrador: dict = Depends(validar_administrador)
+):
+
+    resultado = repo.registrar_por_qr(
+        datos.codigo_qr,
+        datos.id_evento,
+        administrador["usuario_id"]
+    )
+
+    if resultado["estado"] == "no_encontrada":
+        raise HTTPException(
+            status_code=404,
+            detail="QR inválido o no pertenece a este evento"
+        )
+
+    if resultado["estado"] == "duplicada":
+        raise HTTPException(
+            status_code=409,
+            detail="Este estudiante ya tiene asistencia registrada"
+        )
+
+    if resultado["estado"] == "error":
+        raise HTTPException(
+            status_code=500,
+            detail="No se pudo conectar con la base de datos"
+        )
+
+    return {
+        "mensaje": "Asistencia registrada exitosamente",
+        "id": resultado["id"]
+    }
