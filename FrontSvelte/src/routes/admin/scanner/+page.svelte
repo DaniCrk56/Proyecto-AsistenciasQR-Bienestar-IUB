@@ -1,3 +1,4 @@
+
 <script>
     import { onMount } from 'svelte';
     import { Html5Qrcode } from 'html5-qrcode';
@@ -14,52 +15,77 @@
 
     const API_URL = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
 
-    onMount(async () => {
+    onMount(() => {
+
+        let componenteActivo = true;
+
         const parametros = new URLSearchParams(window.location.search);
         idEvento = parametros.get('id_evento') || '';
 
-        if (!idEvento) {
-            estadoCamara = 'No se recibió el evento seleccionado';
-            return;
+        async function iniciarCamara() {
+
+            if (!idEvento) {
+                estadoCamara = 'No se recibió el evento seleccionado';
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                estadoCamara = 'Debes iniciar sesión nuevamente';
+                return;
+            }
+
+            lector = new Html5Qrcode('lector-qr');
+
+            try {
+                await lector.start(
+                    { facingMode: 'environment' },
+                    {
+                        fps: 10,
+                        qrbox: {
+                            width: 220,
+                            height: 220
+                        }
+                    },
+                    codigoQR => {
+                        registrarAsistencia(codigoQR);
+                    },
+                    () => {}
+                );
+
+                if (!componenteActivo) {
+                    await lector.stop();
+                    lector.clear();
+                    return;
+                }
+
+                estadoCamara = 'Cámara activa. Esperando código QR';
+
+            } catch (error) {
+                console.error('Error al iniciar la cámara:', error);
+
+                if (componenteActivo) {
+                    estadoCamara = 'No se pudo activar la cámara. Verifica los permisos.';
+                }
+            }
         }
 
-        const token = localStorage.getItem('token');
+        iniciarCamara();
 
-        if (!token) {
-            estadoCamara = 'Debes iniciar sesión nuevamente';
-            return;
-        }
-
-        lector = new Html5Qrcode('lector-qr');
-
-        try {
-            await lector.start(
-                { facingMode: 'environment' },
-                {
-                    fps: 10,
-                    qrbox: {
-                        width: 220,
-                        height: 220
-                    }
-                },
-                codigoQR => {
-                    registrarAsistencia(codigoQR);
-                },
-                () => {}
-            );
-
-            estadoCamara = 'Cámara activa. Esperando código QR';
-
-        } catch (error) {
-            console.error('Error al iniciar la cámara:', error);
-            estadoCamara = 'No se pudo activar la cámara. Verifica los permisos.';
-        }
-
+        // Apagar la cámara cuando se abandona la página
         return () => {
+
+            componenteActivo = false;
+
             if (lector && lector.isScanning) {
-                lector.stop().catch(error => {
-                    console.error('Error al detener la cámara:', error);
-                });
+                lector.stop()
+                    .then(() => {
+                        lector.clear();
+                    })
+                    .catch(error => {
+                        console.error('Error al apagar la cámara:', error);
+                    });
             }
         };
     });
@@ -97,14 +123,17 @@
                 tipoMensaje = 'exito';
                 tituloMensaje = '¡Asistencia registrada!';
                 textoMensaje = datos.mensaje || 'La asistencia se registró exitosamente.';
+
             } else if (respuesta.status === 409) {
                 tipoMensaje = 'advertencia';
                 tituloMensaje = 'Asistencia duplicada';
                 textoMensaje = datos.detail || 'Este estudiante ya tiene asistencia registrada.';
+
             } else if (respuesta.status === 404) {
                 tipoMensaje = 'error';
                 tituloMensaje = 'QR no válido';
                 textoMensaje = datos.detail || 'El QR no pertenece a este evento.';
+
             } else {
                 tipoMensaje = 'error';
                 tituloMensaje = 'No se pudo registrar';
@@ -122,6 +151,7 @@
         mostrarMensaje = true;
 
         setTimeout(() => {
+
             mostrarMensaje = false;
             procesando = false;
 
@@ -129,9 +159,11 @@
                 lector.resume();
                 estadoCamara = 'Cámara activa. Esperando código QR';
             }
+
         }, 3000);
     }
 </script>
+
 
 
 <svelte:head>
