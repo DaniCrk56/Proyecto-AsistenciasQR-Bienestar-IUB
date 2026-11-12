@@ -20,20 +20,11 @@
     let cargando = true;
     let errorCarga = '';
 
-function seleccionarActividad(indice) {
-    actividadSeleccionada = indice;
-    mensaje = '';
-
-    if (swiper) {
-        swiper.slideToLoop(indice);
-    }
-}
     async function cargarActividades() {
         cargando = true;
         errorCarga = '';
 
         try {
-            // Consultar las actividades, categorías y lugares
             const respuestaActividades = await fetch(`${URL_BASE}/actividades/`);
             const respuestaCategorias = await fetch(`${URL_BASE}/categorias-actividad/`);
             const respuestaLugares = await fetch(`${URL_BASE}/lugares/`);
@@ -55,7 +46,6 @@ function seleccionarActividad(indice) {
                 lugares = await respuestaLugares.json();
             }
 
-            // Preparar los datos para mostrarlos en las tarjetas
             actividades = datosActividades
                 .filter(actividad => actividad.estado !== false)
                 .map(actividad => {
@@ -91,8 +81,20 @@ function seleccionarActividad(indice) {
 
     function formatearFecha(fecha) {
         const partes = fecha.split('-');
-
         return partes[2] + '/' + partes[1] + '/' + partes[0];
+    }
+
+    function seleccionarActividad(indice) {
+        actividadSeleccionada = indice;
+        mensaje = '';
+
+        if (swiper) {
+            if (swiper.params.loop) {
+                swiper.slideToLoop(indice);
+            } else {
+                swiper.slideTo(indice);
+            }
+        }
     }
 
     function inscribirse() {
@@ -102,8 +104,6 @@ function seleccionarActividad(indice) {
     onMount(() => {
         async function iniciarPagina() {
             await cargarActividades();
-
-            // Esperar a que Svelte dibuje las tarjetas
             await tick();
 
             if (actividades.length === 0) {
@@ -120,7 +120,7 @@ function seleccionarActividad(indice) {
                 slidesPerView: 5,
                 slidesPerGroup: 1,
 
-                loop: actividades.length > 2,
+                loop: actividades.length >= 6,
                 loopAdditionalSlides: 5,
                 speed: 650,
 
@@ -208,6 +208,7 @@ function seleccionarActividad(indice) {
         };
     });
 </script>
+
 
 
 <svelte:head>
