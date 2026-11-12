@@ -1,6 +1,6 @@
 
 <script>
-    import { onMount } from 'svelte';
+    import { onMount, tick } from 'svelte';
     import Swiper from 'swiper';
     import { EffectCoverflow, Navigation, Pagination } from 'swiper/modules';
 
@@ -9,107 +9,189 @@
     import 'swiper/css/navigation';
     import 'swiper/css/pagination';
 
+    const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
+
     let swiper;
     let actividadSeleccionada = 0;
     let mensaje = '';
     let menuAbierto = false;
 
-   let actividades = [];
+    let actividades = [];
+    let cargando = true;
+    let errorCarga = '';
 
+    async function cargarActividades() {
+        cargando = true;
+        errorCarga = '';
+
+        try {
+            // Consultar las actividades, categorías y lugares
+            const respuestaActividades = await fetch(`${URL_BASE}/actividades/`);
+            const respuestaCategorias = await fetch(`${URL_BASE}/categorias-actividad/`);
+            const respuestaLugares = await fetch(`${URL_BASE}/lugares/`);
+
+            if (!respuestaActividades.ok) {
+                throw new Error('No se pudieron cargar los eventos.');
+            }
+
+            const datosActividades = await respuestaActividades.json();
+
+            let categorias = [];
+            let lugares = [];
+
+            if (respuestaCategorias.ok) {
+                categorias = await respuestaCategorias.json();
+            }
+
+            if (respuestaLugares.ok) {
+                lugares = await respuestaLugares.json();
+            }
+
+            // Preparar los datos para mostrarlos en las tarjetas
+            actividades = datosActividades
+                .filter(actividad => actividad.estado !== false)
+                .map(actividad => {
+                    const categoria = categorias.find(
+                        item => item.id === actividad.id_categoria
+                    );
+
+                    const lugar = lugares.find(
+                        item => item.id === actividad.id_lugar
+                    );
+
+                    return {
+                        id: actividad.id,
+                        nombre: actividad.nombre,
+                        descripcion: actividad.descripcion || 'Sin descripción disponible.',
+                        categoria: categoria ? categoria.nombre : 'Actividad',
+                        fecha: formatearFecha(actividad.fecha),
+                        hora: actividad.hora_inicio.slice(0, 5) + ' - ' + actividad.hora_fin.slice(0, 5),
+                        lugar: lugar ? lugar.nombre : 'Lugar por confirmar',
+                        imagen: '/LogoIUB.png'
+                    };
+                });
+
+            actividadSeleccionada = 0;
+
+        } catch (error) {
+            console.error('Error cargando eventos:', error);
+            errorCarga = error.message || 'Ocurrió un error al cargar los eventos.';
+        } finally {
+            cargando = false;
+        }
+    }
+
+    function formatearFecha(fecha) {
+        const partes = fecha.split('-');
+
+        return partes[2] + '/' + partes[1] + '/' + partes[0];
+    }
 
     function inscribirse() {
         mensaje = 'La inscripción estará disponible cuando conectemos esta página con el sistema.';
     }
 
     onMount(() => {
-if (actividades.length === 0) {
-    return;
-}
-        swiper = new Swiper('.eventos-swiper', {
-            modules: [EffectCoverflow, Navigation, Pagination],
+        async function iniciarPagina() {
+            await cargarActividades();
 
-            effect: 'coverflow',
-            grabCursor: true,
-            centeredSlides: true,
+            // Esperar a que Svelte dibuje las tarjetas
+            await tick();
 
-            slidesPerView: 5,
-            slidesPerGroup: 1,
-
-            loop: true,
-            loopAdditionalSlides: 5,
-            speed: 650,
-
-            coverflowEffect: {
-                rotate: 0,
-                stretch: 0,
-                depth: 100,
-                modifier: 1.2,
-                slideShadows: false
-            },
-
-            navigation: {
-                nextEl: '.boton-siguiente',
-                prevEl: '.boton-anterior'
-            },
-
-            pagination: {
-                el: '.paginacion-eventos',
-                clickable: true
-            },
-
-            breakpoints: {
-                0: {
-                    slidesPerView: 1.15,
-                    coverflowEffect: {
-                        rotate: 0,
-                        stretch: 0,
-                        depth: 50,
-                        modifier: 1,
-                        slideShadows: false
-                    }
-                },
-
-                600: {
-                    slidesPerView: 2.2,
-                    coverflowEffect: {
-                        rotate: 0,
-                        stretch: 0,
-                        depth: 70,
-                        modifier: 1.1,
-                        slideShadows: false
-                    }
-                },
-
-                900: {
-                    slidesPerView: 3,
-                    coverflowEffect: {
-                        rotate: 0,
-                        stretch: 0,
-                        depth: 80,
-                        modifier: 1.1,
-                        slideShadows: false
-                    }
-                },
-
-                1200: {
-                    slidesPerView: 5,
-                    coverflowEffect: {
-                        rotate: 0,
-                        stretch: 0,
-                        depth: 100,
-                        modifier: 1.2,
-                        slideShadows: false
-                    }
-                }
-            },
-
-            on: {
-                slideChange: function () {
-                    actividadSeleccionada = this.realIndex % actividades.length;
-                    mensaje = '';
-                }
+            if (actividades.length === 0) {
+                return;
             }
-        });
+
+            swiper = new Swiper('.eventos-swiper', {
+                modules: [EffectCoverflow, Navigation, Pagination],
+
+                effect: 'coverflow',
+                grabCursor: true,
+                centeredSlides: true,
+
+                slidesPerView: 5,
+                slidesPerGroup: 1,
+
+                loop: actividades.length > 2,
+                loopAdditionalSlides: 5,
+                speed: 650,
+
+                coverflowEffect: {
+                    rotate: 0,
+                    stretch: 0,
+                    depth: 100,
+                    modifier: 1.2,
+                    slideShadows: false
+                },
+
+                navigation: {
+                    nextEl: '.boton-siguiente',
+                    prevEl: '.boton-anterior'
+                },
+
+                pagination: {
+                    el: '.paginacion-eventos',
+                    clickable: true
+                },
+
+                breakpoints: {
+                    0: {
+                        slidesPerView: 1.15,
+                        coverflowEffect: {
+                            rotate: 0,
+                            stretch: 0,
+                            depth: 50,
+                            modifier: 1,
+                            slideShadows: false
+                        }
+                    },
+
+                    600: {
+                        slidesPerView: 2.2,
+                        coverflowEffect: {
+                            rotate: 0,
+                            stretch: 0,
+                            depth: 70,
+                            modifier: 1.1,
+                            slideShadows: false
+                        }
+                    },
+
+                    900: {
+                        slidesPerView: 3,
+                        coverflowEffect: {
+                            rotate: 0,
+                            stretch: 0,
+                            depth: 80,
+                            modifier: 1.1,
+                            slideShadows: false
+                        }
+                    },
+
+                    1200: {
+                        slidesPerView: 5,
+                        coverflowEffect: {
+                            rotate: 0,
+                            stretch: 0,
+                            depth: 100,
+                            modifier: 1.2,
+                            slideShadows: false
+                        }
+                    }
+                },
+
+                on: {
+                    slideChange: function () {
+                        if (actividades.length > 0) {
+                            actividadSeleccionada = this.realIndex % actividades.length;
+                            mensaje = '';
+                        }
+                    }
+                }
+            });
+        }
+
+        iniciarPagina();
 
         return () => {
             if (swiper) {
@@ -118,6 +200,7 @@ if (actividades.length === 0) {
         };
     });
 </script>
+
 
 <svelte:head>
     <title>Eventos | Bienestar Universitario</title>
@@ -241,7 +324,23 @@ if (actividades.length === 0) {
                 </button>
             </div>
         </div>
-
+{#if cargando}
+    <div class="detalle-evento">
+        <div class="detalle-texto">
+            <h2>Cargando eventos...</h2>
+            <p class="descripcion">
+                Estamos consultando las actividades de Bienestar Universitario.
+            </p>
+        </div>
+    </div>
+{:else if errorCarga}
+    <div class="detalle-evento">
+        <div class="detalle-texto">
+            <h2>No se pudieron cargar los eventos</h2>
+            <p class="descripcion">{errorCarga}</p>
+        </div>
+    </div>
+{/if}
         <div class="carrusel-contenedor">
             <div class="swiper eventos-swiper">
                 <div class="swiper-wrapper">
