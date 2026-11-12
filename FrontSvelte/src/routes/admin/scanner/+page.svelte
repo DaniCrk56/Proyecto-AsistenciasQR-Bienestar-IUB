@@ -1,25 +1,135 @@
-
 <script>
     import { onMount } from 'svelte';
+    import { Html5Qrcode } from 'html5-qrcode';
 
     let idEvento = '';
+    let lector;
     let mostrarMensaje = false;
+    let procesando = false;
 
-    
-    let evento = [];
+    let tituloMensaje = '';
+    let textoMensaje = '';
+    let tipoMensaje = 'exito';
+    let estadoCamara = 'Iniciando cámara...';
 
+    const API_URL = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
 
-    onMount(() => {
+    onMount(async () => {
         const parametros = new URLSearchParams(window.location.search);
         idEvento = parametros.get('id_evento') || '';
+
+        if (!idEvento) {
+            estadoCamara = 'No se recibió el evento seleccionado';
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            estadoCamara = 'Debes iniciar sesión nuevamente';
+            return;
+        }
+
+        lector = new Html5Qrcode('lector-qr');
+
+        try {
+            await lector.start(
+                { facingMode: 'environment' },
+                {
+                    fps: 10,
+                    qrbox: {
+                        width: 220,
+                        height: 220
+                    }
+                },
+                codigoQR => {
+                    registrarAsistencia(codigoQR);
+                },
+                () => {}
+            );
+
+            estadoCamara = 'Cámara activa. Esperando código QR';
+
+        } catch (error) {
+            console.error('Error al iniciar la cámara:', error);
+            estadoCamara = 'No se pudo activar la cámara. Verifica los permisos.';
+        }
+
+        return () => {
+            if (lector && lector.isScanning) {
+                lector.stop().catch(error => {
+                    console.error('Error al detener la cámara:', error);
+                });
+            }
+        };
     });
 
-    function simularAsistencia() {
+    async function registrarAsistencia(codigoQR) {
+
+        if (procesando) {
+            return;
+        }
+
+        procesando = true;
+
+        if (lector && lector.isScanning) {
+            lector.pause(true);
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const respuesta = await fetch(`${API_URL}/asistencias/escanear`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    codigo_qr: codigoQR,
+                    id_evento: Number(idEvento)
+                })
+            });
+
+            const datos = await respuesta.json();
+
+            if (respuesta.ok) {
+                tipoMensaje = 'exito';
+                tituloMensaje = '¡Asistencia registrada!';
+                textoMensaje = datos.mensaje || 'La asistencia se registró exitosamente.';
+            } else if (respuesta.status === 409) {
+                tipoMensaje = 'advertencia';
+                tituloMensaje = 'Asistencia duplicada';
+                textoMensaje = datos.detail || 'Este estudiante ya tiene asistencia registrada.';
+            } else if (respuesta.status === 404) {
+                tipoMensaje = 'error';
+                tituloMensaje = 'QR no válido';
+                textoMensaje = datos.detail || 'El QR no pertenece a este evento.';
+            } else {
+                tipoMensaje = 'error';
+                tituloMensaje = 'No se pudo registrar';
+                textoMensaje = datos.detail || 'Ocurrió un error al validar el código QR.';
+            }
+
+        } catch (error) {
+            console.error('Error al registrar asistencia:', error);
+
+            tipoMensaje = 'error';
+            tituloMensaje = 'Error de conexión';
+            textoMensaje = 'No fue posible comunicarse con el servidor.';
+        }
+
         mostrarMensaje = true;
 
         setTimeout(() => {
             mostrarMensaje = false;
-        }, 2000);
+            procesando = false;
+
+            if (lector && lector.isScanning) {
+                lector.resume();
+                estadoCamara = 'Cámara activa. Esperando código QR';
+            }
+        }, 3000);
     }
 </script>
 
@@ -72,20 +182,24 @@
 
             <div class="camara">
 
-                <div class="fondo-camara">
-                    <div class="icono-camara">▣</div>
-                    <h3>Cámara no conectada</h3>
-                    <p>La vista de la cámara aparecerá aquí cuando conectemos el lector QR.</p>
+              <div class="fondo-camara">
+    <div class="icono-camara">▣</div>
 
-                    <div class="marco">
-                        <span class="esquina arriba-izquierda"></span>
-                        <span class="esquina arriba-derecha"></span>
-                        <span class="esquina abajo-izquierda"></span>
-                        <span class="esquina abajo-derecha"></span>
-                        <div class="linea-escaneo"></div>
-                        <span class="texto-marco">UBICA EL CÓDIGO QR AQUÍ</span>
-                    </div>
-                </div>
+    <h3>Escáner de estudiantes</h3>
+
+    <p>{estadoCamara}</p>
+
+    <div class="marco">
+        <span class="esquina arriba-izquierda"></span>
+        <span class="esquina arriba-derecha"></span>
+        <span class="esquina abajo-izquierda"></span>
+        <span class="esquina abajo-derecha"></span>
+
+        <div id="lector-qr"></div>
+    </div>
+
+    <span class="texto-marco">UBICA EL CÓDIGO QR AQUÍ</span>
+</div>
 
             </div>
 
@@ -108,21 +222,22 @@
             <p>Una vez conectado el lector, la asistencia se registrará automáticamente al validar el código QR.</p>
         </div>
 
-        <button class="boton-prueba" onclick={simularAsistencia}>
-            Probar notificación de asistencia
-        </button>
-
     </main>
 
-    {#if mostrarMensaje}
-        <div class="fondo-notificacion">
-            <div class="notificacion">
-                <div class="check">✓</div>
-                <h2>¡Asistencia registrada!</h2>
-                <p>La asistencia se registró exitosamente.</p>
+  {#if mostrarMensaje}
+    <div class="fondo-notificacion">
+        <div class="notificacion">
+            <div class="check"
+                class:advertencia={tipoMensaje === 'advertencia'}
+                class:error={tipoMensaje === 'error'}>
+                {tipoMensaje === 'exito' ? '✓' : '!'}
             </div>
+
+            <h2>{tituloMensaje}</h2>
+            <p>{textoMensaje}</p>
         </div>
-    {/if}
+    </div>
+{/if}
 
 </div>
 
@@ -496,24 +611,6 @@
         margin: 0;
     }
 
-    .boton-prueba {
-        display: block;
-        margin: 20px auto 0;
-        padding: 12px 20px;
-        border: none;
-        background: #0785b6;
-        color: white;
-        border-radius: 10px;
-        font-family: inherit;
-        font-size: 12px;
-        font-weight: 900;
-        cursor: pointer;
-    }
-
-    .boton-prueba:hover {
-        background: #056b91;
-    }
-
     .fondo-notificacion {
         position: fixed;
         inset: 0;
@@ -623,5 +720,41 @@
             min-height: 350px;
         }
     }
+
+.marco {
+    width: 260px;
+    height: 260px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+#lector-qr {
+    width: 100%;
+    max-width: 240px;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+:global(#lector-qr video) {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.texto-marco {
+    position: static;
+    margin-top: 12px;
+}
+
+.check.advertencia {
+    background: #fff3cd;
+    color: #b78103;
+}
+
+.check.error {
+    background: #fde8e8;
+    color: #d93636;
+}
 
 </style>
