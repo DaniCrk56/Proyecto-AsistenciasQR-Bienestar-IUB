@@ -799,17 +799,26 @@
         overflow: visible;
     }
 
-    .eventos-swiper .swiper-slide {
-        height: 350px;
-        border-radius: 18px;
-        overflow: hidden;
-        opacity: 1;
-        transition: transform .35s ease;
-    }
+  .eventos-swiper .swiper-slide {
+    height: 350px;
+    border-radius: 18px;
+    overflow: hidden;
+    opacity: 1;
+    transition: transform .35s ease;
+    position: relative;
+}
 
-    :global(.eventos-swiper .swiper-slide-active) {
-        z-index: 2;
-    }
+/* Permite que la tarjeta sobre la que está el mouse
+   quede por encima de las demás */
+:global(.eventos-swiper .swiper-slide:hover) {
+    z-index: 100 !important;
+}
+
+.ver-evento {
+    position: relative;
+    z-index: 101;
+    pointer-events: auto;
+}
 
     .tarjeta-evento {
         width: 100%;
