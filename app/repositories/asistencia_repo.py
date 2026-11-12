@@ -48,3 +48,80 @@ class AsistenciaRepository:
         conn.commit()
         conn.close()
         return True
+
+
+    def registrar_por_qr(self, codigo_qr, id_evento, id_validador):
+
+        conn = self.db.get_connection()
+
+        if not conn:
+            return {"estado": "error"}
+
+        cursor = conn.cursor()
+
+        try:
+            # Buscar la inscripción correspondiente al QR y al evento
+            cursor.execute("""
+                SELECT id
+                FROM inscripcion
+                WHERE codigo_qr = %s
+                AND id_actividad = %s
+                AND estado = TRUE;
+            """, (codigo_qr, id_evento))
+
+            inscripcion = cursor.fetchone()
+
+            if not inscripcion:
+                return {"estado": "no_encontrada"}
+
+            if isinstance(inscripcion, dict):
+                id_inscripcion = inscripcion["id"]
+            else:
+                id_inscripcion = inscripcion[0]
+
+            # Comprobar si ya tiene asistencia registrada
+            cursor.execute("""
+                SELECT id
+                FROM asistencia
+                WHERE id_inscripcion = %s
+                AND estado = TRUE;
+            """, (id_inscripcion,))
+
+            asistencia = cursor.fetchone()
+
+            if asistencia:
+                return {"estado": "duplicada"}
+
+            # Registrar asistencia
+            cursor.execute("""
+                INSERT INTO asistencia (
+                    id_inscripcion,
+                    metodo,
+                    id_validador,
+                    estado
+                )
+                VALUES (%s, 'QR', %s, TRUE)
+                RETURNING id;
+            """, (id_inscripcion, id_validador))
+
+            nueva_asistencia = cursor.fetchone()
+
+            if isinstance(nueva_asistencia, dict):
+                nuevo_id = nueva_asistencia["id"]
+            else:
+                nuevo_id = nueva_asistencia[0]
+
+            conn.commit()
+
+            return {
+                "estado": "registrada",
+                "id": nuevo_id
+            }
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
