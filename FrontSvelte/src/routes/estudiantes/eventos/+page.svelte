@@ -20,6 +20,14 @@
     let cargando = true;
     let errorCarga = '';
 
+function seleccionarActividad(indice) {
+    actividadSeleccionada = indice;
+    mensaje = '';
+
+    if (swiper) {
+        swiper.slideToLoop(indice);
+    }
+}
     async function cargarActividades() {
         cargando = true;
         errorCarga = '';
@@ -352,7 +360,12 @@
                                 <div class="capa-tarjeta">
                                     <span class="categoria">{actividad.categoria}</span>
                                     <h3>{actividad.nombre}</h3>
-                                    <span class="ver-evento">Ver evento →</span>
+                                    <button
+    class="ver-evento"
+    onclick={() => seleccionarActividad(i)}
+>
+    Ver evento →
+</button>
                                 </div>
                             </div>
                         </div>
@@ -1608,5 +1621,27 @@
         transition-duration: .01ms !important;
     }
 }
+.ver-evento {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 9px 16px;
+    margin-top: 5px;
+    border: 2px solid rgba(255, 255, 255, .8);
+    border-radius: 8px;
+    background: rgba(20, 32, 68, .65);
+    color: #f5ca24;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 1000;
+    cursor: pointer;
+    transition: .25s ease;
+}
 
+.ver-evento:hover {
+    background: #f5ca24;
+    color: #142044;
+    border-color: #f5ca24;
+    transform: translateX(5px);
+}
 </style>
