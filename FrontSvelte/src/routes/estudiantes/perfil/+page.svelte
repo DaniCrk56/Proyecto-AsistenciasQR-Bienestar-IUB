@@ -72,6 +72,8 @@
         if (usuarioGuardado) {
             try {
                 const usuario = JSON.parse(usuarioGuardado);
+console.log('Usuario guardado:', usuario);
+console.log('ID del usuario:', usuario.id);
 
                 estudiante = {
                     nombre: `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim() || 'Nombre no disponible',
