@@ -1881,12 +1881,52 @@ async function crearActividad(evento) {
         margin: 10px 0;
     }
 
-    .modal-confirmacion p {
-        color: #8995a9;
-        font-size: 13px;
-        line-height: 1.6;
-        margin: 12px 0;
-    }
+ /* BOTONES DEL MODAL DE ELIMINAR */
+
+.modal-confirmacion .botones-modal {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.modal-confirmacion .botones-modal button {
+    flex: 1;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 11px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 1000;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-confirmacion .btn-cancelar {
+    background: #edf1f7;
+    color: #596781;
+}
+
+.modal-confirmacion .btn-cancelar:hover {
+    background: #dfe5ef;
+    transform: translateY(-2px);
+}
+
+.modal-confirmacion .btn-eliminar {
+    background: #dc3545;
+    color: white;
+}
+
+.modal-confirmacion .btn-eliminar:hover {
+    background: #b02a37;
+    transform: translateY(-2px);
+}
+
+.modal-confirmacion .botones-modal button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
 
     .modal-botones {
         display: flex;
