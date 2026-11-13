@@ -6,6 +6,15 @@
     let eventos = [];
     let cargandoEventos = false;
     let mensajeEventos = '';
+let estadisticas = {
+    total_eventos: 0,
+    eventos_activos: 0,
+    estudiantes_inscritos: 0,
+    total_asistencias: 0
+};
+
+let cargandoEstadisticas = false;
+let mensajeEstadisticas = '';
 
     let asistencias = [];
     let cargandoAsistencias = false;
@@ -64,9 +73,47 @@
         }
     }
 
+
+async function cargarEstadisticas() {
+    cargandoEstadisticas = true;
+    mensajeEstadisticas = '';
+
+    try {
+        const token = localStorage.getItem('token');
+
+        const respuesta = await fetch(
+            URL_BASE + '/actividades/estadisticas/panel',
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            }
+        );
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(
+                datos.detail || 'No se pudieron cargar las estadísticas.'
+            );
+        }
+
+        estadisticas = datos;
+
+    } catch (error) {
+        mensajeEstadisticas =
+            error.message || 'Error al consultar las estadísticas.';
+    }
+
+    cargandoEstadisticas = false;
+}
+
+
     onMount(() => {
-        cargarUsuario();
-    });
+    cargarUsuario();
+    cargarEstadisticas();
+});
 
     function cambiarSeccion(seccion) {
         seccionActual = seccion;
@@ -329,35 +376,51 @@
                 <div class="bienvenida-icono">✦</div>
             </section>
 
-            <section class="estadisticas">
-                <article class="estadistica">
-                    <div class="estadistica-icono azul">▦</div>
-                    <span>Total de eventos</span>
-                    <h2>12</h2>
-                    <small>Eventos registrados</small>
-                </article>
+           
+<section class="estadisticas">
 
-                <article class="estadistica">
-                    <div class="estadistica-icono verde">✓</div>
-                    <span>Eventos activos</span>
-                    <h2>8</h2>
-                    <small>Disponibles actualmente</small>
-                </article>
+    <article class="estadistica">
+        <div class="estadistica-icono azul">▦</div>
+        <span>Total de eventos</span>
+        <h2>
+            {cargandoEstadisticas ? '...' : estadisticas.total_eventos}
+        </h2>
+        <small>Eventos registrados</small>
+    </article>
 
-                <article class="estadistica">
-                    <div class="estadistica-icono amarillo">♙</div>
-                    <span>Estudiantes inscritos</span>
-                    <h2>250</h2>
-                    <small>Inscripciones registradas</small>
-                </article>
+    <article class="estadistica">
+        <div class="estadistica-icono verde">✓</div>
+        <span>Eventos activos</span>
+        <h2>
+            {cargandoEstadisticas ? '...' : estadisticas.eventos_activos}
+        </h2>
+        <small>Disponibles actualmente</small>
+    </article>
 
-                <article class="estadistica">
-                    <div class="estadistica-icono morado">▣</div>
-                    <span>Asistencias</span>
-                    <h2>184</h2>
-                    <small>Asistencias registradas</small>
-                </article>
-            </section>
+    <article class="estadistica">
+        <div class="estadistica-icono amarillo">♙</div>
+        <span>Estudiantes inscritos</span>
+        <h2>
+            {cargandoEstadisticas ? '...' : estadisticas.estudiantes_inscritos}
+        </h2>
+        <small>Inscripciones registradas</small>
+    </article>
+
+    <article class="estadistica">
+        <div class="estadistica-icono morado">▣</div>
+        <span>Asistencias</span>
+        <h2>
+            {cargandoEstadisticas ? '...' : estadisticas.total_asistencias}
+        </h2>
+        <small>Asistencias registradas</small>
+    </article>
+
+</section>
+
+{#if mensajeEstadisticas}
+    <p class="error-mensaje">{mensajeEstadisticas}</p>
+{/if}
+
 
             <section class="seccion">
                 <div class="encabezado-seccion">
