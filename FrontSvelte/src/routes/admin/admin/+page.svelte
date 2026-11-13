@@ -386,62 +386,67 @@ function cancelarCierre() {
         cargandoAsistencias = false;
     }
 
-    async function crearActividad(evento) {
-        evento.preventDefault();
+    
+async function crearActividad(evento) {
+    evento.preventDefault();
 
-        mensajeActividad = '';
-        errorActividad = false;
-        guardandoActividad = true;
+    mensajeActividad = '';
+    errorActividad = false;
+    guardandoActividad = true;
 
-        try {
-            const respuesta = await fetch(URL_BASE + '/actividades/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    nombre: nuevaActividad.nombre,
-                    descripcion: nuevaActividad.descripcion,
-                    fecha: nuevaActividad.fecha,
-                    hora_inicio: nuevaActividad.hora_inicio,
-                    hora_fin: nuevaActividad.hora_fin,
-                    cupo_maximo: Number(nuevaActividad.cupo_maximo),
-                    id_lugar: Number(nuevaActividad.id_lugar),
-                    id_categoria: Number(nuevaActividad.id_categoria),
-                    id_estado_actividad: Number(nuevaActividad.id_estado_actividad)
-                })
-            });
+    const token = localStorage.getItem('token');
 
-            const datos = await respuesta.json();
+    try {
+        const respuesta = await fetch(URL_BASE + '/actividades/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                nombre: nuevaActividad.nombre,
+                descripcion: nuevaActividad.descripcion,
+                fecha: nuevaActividad.fecha,
+                hora_inicio: nuevaActividad.hora_inicio,
+                hora_fin: nuevaActividad.hora_fin,
+                cupo_maximo: Number(nuevaActividad.cupo_maximo),
+                id_lugar: Number(nuevaActividad.id_lugar),
+                id_categoria: Number(nuevaActividad.id_categoria),
+                id_estado_actividad: Number(nuevaActividad.id_estado_actividad)
+            })
+        });
 
-            if (!respuesta.ok) {
-                throw new Error(datos.detail || 'No se pudo registrar el evento.');
-            }
+        const datos = await respuesta.json();
 
-            mensajeActividad = '¡Evento registrado correctamente!';
-
-            await cargarEventos();
-
-            nuevaActividad = {
-                nombre: '',
-                descripcion: '',
-                fecha: '',
-                hora_inicio: '',
-                hora_fin: '',
-                cupo_maximo: '',
-                id_lugar: '',
-                id_categoria: '',
-                id_estado_actividad: ''
-            };
-
-        } catch (error) {
-            errorActividad = true;
-            mensajeActividad =
-                error.message || 'Ocurrió un error al registrar el evento.';
+        if (!respuesta.ok) {
+            throw new Error(datos.detail || 'No se pudo registrar el evento.');
         }
 
-        guardandoActividad = false;
+        mensajeActividad = '¡Evento registrado correctamente!';
+
+        await cargarEventos();
+
+        nuevaActividad = {
+            nombre: '',
+            descripcion: '',
+            fecha: '',
+            hora_inicio: '',
+            hora_fin: '',
+            cupo_maximo: '',
+            id_lugar: '',
+            id_categoria: '',
+            id_estado_actividad: ''
+        };
+
+    } catch (error) {
+        errorActividad = true;
+        mensajeActividad =
+            error.message || 'Ocurrió un error al registrar el evento.';
     }
+
+    guardandoActividad = false;
+}
+
 
     function abrirScanner(evento) {
         window.location.href = '/admin/scanner?id_evento=' + evento.id;
