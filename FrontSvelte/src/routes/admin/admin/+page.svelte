@@ -1172,6 +1172,7 @@ function cancelarCierre() {
 
 </div>
 
+
 <style>
     :global(*) {
         box-sizing: border-box;
@@ -1767,6 +1768,353 @@ function cancelarCierre() {
         overflow-wrap: anywhere;
     }
 
+    /* TABLA DE ASISTENCIAS */
+
+    .tabla-asistencias {
+        width: 100%;
+        overflow-x: auto;
+        background: white;
+        border-radius: 15px;
+        margin-top: 20px;
+        box-shadow: 0 5px 20px #15264a08;
+    }
+
+    .tabla-asistencias table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+    .tabla-asistencias th,
+    .tabla-asistencias td {
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #edf0f5;
+        font-size: 12px;
+    }
+
+    .tabla-asistencias th {
+        background: #f5f8fc;
+        color: #34415f;
+        font-weight: 1000;
+    }
+
+    .tabla-asistencias td {
+        color: #66738a;
+    }
+
+    .metodo-qr {
+        background: #e2f8ed;
+        color: #159a65;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 1000;
+    }
+
+    /* MODALES GENERALES */
+
+    .modal-fondo {
+        position: fixed;
+        inset: 0;
+        background: rgba(8, 20, 45, 0.75);
+        backdrop-filter: blur(7px);
+        -webkit-backdrop-filter: blur(7px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .modal-contenido {
+        background: white;
+        width: 100%;
+        max-width: 650px;
+        padding: 30px;
+        border-radius: 18px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        animation: aparecerModal 0.25s ease;
+    }
+
+    .modal-contenido h2 {
+        margin-bottom: 8px;
+    }
+
+    .modal-icono {
+        width: 55px;
+        height: 55px;
+        margin: 0 auto 15px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #e7f5fc;
+        color: #0785b6;
+        font-size: 28px;
+    }
+
+    /* MODAL DE CERRAR SESIÓN Y CONFIRMACIÓN */
+
+    .modal-confirmacion {
+        width: 100%;
+        max-width: 450px;
+        background: white;
+        border-radius: 18px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        animation: aparecerModal 0.25s ease;
+    }
+
+    .modal-confirmacion h2 {
+        color: #18233f;
+        font-size: 21px;
+        font-weight: 1000;
+        margin: 10px 0;
+    }
+
+    .modal-confirmacion p {
+        color: #8995a9;
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 12px 0;
+    }
+
+    .modal-botones {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .modal-botones button {
+        flex: 1;
+        padding: 13px 10px;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .boton-cancelar {
+        background: #edf1f7;
+        color: #596781;
+    }
+
+    .boton-cancelar:hover {
+        background: #dfe5ef;
+    }
+
+    .boton-confirmar {
+        background: #0785b6;
+        color: white;
+    }
+
+    .boton-confirmar:hover {
+        background: #056b91;
+    }
+
+    .modal-confirmacion .btn-eliminar {
+        background: #dc3545;
+        color: white;
+    }
+
+    .modal-confirmacion .btn-eliminar:hover {
+        background: #b02a37;
+    }
+
+    /* MODAL DE EDICIÓN */
+
+    .modal-edicion {
+        width: 100%;
+        max-width: 720px;
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 0;
+        max-height: 92vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+        animation: aparecerModal 0.3s ease;
+    }
+
+    .modal-edicion h2 {
+        background: linear-gradient(115deg, #0785b6, #07517f);
+        color: white;
+        padding: 27px 32px;
+        margin: 0 0 25px;
+        font-size: 23px;
+        font-weight: 1000;
+        border-radius: 22px 22px 0 0;
+    }
+
+    .modal-edicion form {
+        padding: 0 32px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .modal-edicion label {
+        display: block;
+        color: #34415f;
+        font-size: 12px;
+        font-weight: 900;
+        margin-top: 13px;
+        margin-bottom: 5px;
+    }
+
+    .modal-edicion input,
+    .modal-edicion textarea,
+    .modal-edicion select {
+        width: 100%;
+        padding: 13px 15px;
+        border: 1px solid #dce4ef;
+        border-radius: 11px;
+        background: #f8fafd;
+        color: #18233f;
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .modal-edicion input:focus,
+    .modal-edicion textarea:focus,
+    .modal-edicion select:focus {
+        border-color: #0785b6;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(7, 133, 182, 0.12);
+    }
+
+    .modal-edicion textarea {
+        min-height: 95px;
+        resize: vertical;
+    }
+
+    .modal-edicion .campos-horario {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .modal-edicion .campos-horario div {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .modal-edicion .botones-modal {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #edf0f5;
+    }
+
+    .modal-edicion .botones-modal button {
+        min-width: 125px;
+        padding: 13px 20px;
+        border: none;
+        border-radius: 11px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 1000;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .modal-edicion .btn-cancelar {
+        background: #edf1f7;
+        color: #596781;
+    }
+
+    .modal-edicion .btn-cancelar:hover {
+        background: #dfe5ef;
+        transform: translateY(-2px);
+    }
+
+    .modal-edicion .btn-guardar {
+        background: linear-gradient(115deg, #0785b6, #07517f);
+        color: white;
+        box-shadow: 0 5px 13px rgba(7, 133, 182, 0.2);
+    }
+
+    .modal-edicion .btn-guardar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(7, 133, 182, 0.3);
+    }
+
+    .modal-edicion .botones-modal button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* BOTONES DE EVENTOS */
+
+    .acciones-evento {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .acciones-evento button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+    .btn-editar {
+        background: #00AEEF;
+        color: white;
+    }
+
+    .btn-editar:hover {
+        background: #008FCC;
+        transform: translateY(-2px);
+    }
+
+    .btn-eliminar {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-eliminar:hover {
+        background: #b02a37;
+        transform: translateY(-2px);
+    }
+
+    .acciones-evento button:active {
+        transform: scale(0.97);
+    }
+
+    /* ANIMACIONES */
+
+    @keyframes aparecerModal {
+        from {
+            opacity: 0;
+            transform: translateY(18px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* RESPONSIVE */
+
     @media (max-width: 1100px) {
         .estadisticas {
             grid-template-columns: repeat(2, 1fr);
@@ -1834,311 +2182,38 @@ function cancelarCierre() {
         .campos-dobles {
             grid-template-columns: 1fr;
         }
+
+        .modal-fondo {
+            padding: 10px;
+        }
+
+        .modal-edicion {
+            margin: auto 0;
+            max-height: 95vh;
+            border-radius: 17px;
+        }
+
+        .modal-edicion h2 {
+            padding: 22px;
+            font-size: 19px;
+        }
+
+        .modal-edicion form {
+            padding: 0 20px 22px;
+        }
+
+        .modal-edicion .campos-horario {
+            grid-template-columns: 1fr;
+            gap: 5px;
+        }
+
+        .modal-edicion .botones-modal {
+            flex-direction: column-reverse;
+        }
+
+        .modal-edicion .botones-modal button {
+            width: 100%;
+        }
     }
-
-    .tabla-asistencias {
-        width: 100%;
-        overflow-x: auto;
-        background: white;
-        border-radius: 15px;
-        margin-top: 20px;
-        box-shadow: 0 5px 20px #15264a08;
-    }
-
-    .tabla-asistencias table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 650px;
-    }
-
-    .tabla-asistencias th,
-    .tabla-asistencias td {
-        padding: 16px;
-        text-align: left;
-        border-bottom: 1px solid #edf0f5;
-        font-size: 12px;
-    }
-
-    .tabla-asistencias th {
-        background: #f5f8fc;
-        color: #34415f;
-        font-weight: 1000;
-    }
-
-    .tabla-asistencias td {
-        color: #66738a;
-    }
-
-    .metodo-qr {
-        background: #e2f8ed;
-        color: #159a65;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 10px;
-        font-weight: 1000;
-    }
-
-.modal-fondo {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(10, 20, 45, 0.65);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    z-index: 9999;
-}
-
-.modal-confirmacion {
-    width: 100%;
-    max-width: 400px;
-    background: white;
-    border-radius: 18px;
-    padding: 30px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    animation: aparecerModal 0.25s ease;
-}
-
-.modal-icono {
-    width: 55px;
-    height: 55px;
-    margin: 0 auto 15px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #e7f5fc;
-    color: #0785b6;
-    font-size: 28px;
-}
-
-.modal-confirmacion h2 {
-    color: #18233f;
-    font-size: 21px;
-    font-weight: 1000;
-    margin: 10px 0;
-}
-
-.modal-confirmacion p {
-    color: #8995a9;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.modal-botones {
-    display: flex;
-    gap: 12px;
-    margin-top: 25px;
-}
-
-.modal-botones button {
-    flex: 1;
-    padding: 13px 10px;
-    border: none;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 900;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.boton-cancelar {
-    background: #edf1f7;
-    color: #596781;
-}
-
-.boton-cancelar:hover {
-    background: #dfe5ef;
-}
-
-.boton-confirmar {
-    background: #0785b6;
-    color: white;
-}
-
-.boton-confirmar:hover {
-    background: #056b91;
-}
-
-@keyframes aparecerModal {
-    from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.97);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-
-.modal-fondo {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.65);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.modal-contenido {
-    background: white;
-    width: 100%;
-    max-width: 650px;
-    padding: 30px;
-    border-radius: 15px;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.modal-contenido h2 {
-    margin-bottom: 8px;
-}
-
-.modal-contenido form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.modal-contenido label {
-    font-weight: 600;
-    margin-top: 8px;
-}
-
-.modal-contenido input,
-.modal-contenido textarea,
-.modal-contenido select {
-    width: 100%;
-    padding: 11px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font: inherit;
-}
-
-.campos-horario {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.campos-horario div {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.botones-modal {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.botones-modal button {
-    padding: 11px 18px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-cancelar {
-    background: #e5e7eb;
-    color: #333;
-}
-
-.btn-guardar {
-    background: #00AEEF;
-    color: white;
-}
-
-.botones-modal button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-@media (max-width: 600px) {
-    .campos-horario {
-        grid-template-columns: 1fr;
-    }
-
-    .modal-contenido {
-        padding: 20px;
-    }
-}
-
-
-.acciones-evento {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.acciones-evento button {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.btn-editar {
-    background: #00AEEF;
-    color: white;
-}
-
-.btn-editar:hover {
-    background: #008FCC;
-    transform: translateY(-2px);
-}
-
-.btn-eliminar {
-    background: #dc3545;
-    color: white;
-}
-
-.btn-eliminar:hover {
-    background: #b02a37;
-    transform: translateY(-2px);
-}
-
-.acciones-evento button:active {
-    transform: scale(0.97);
-}
-
-
-.modal-confirmacion {
-    max-width: 450px;
-}
-
-.modal-confirmacion p {
-    margin: 12px 0;
-    line-height: 1.5;
-}
-
-.modal-confirmacion .btn-eliminar {
-    background: #dc3545;
-    color: white;
-}
-
-.modal-confirmacion .btn-eliminar:hover {
-    background: #b02a37;
-}
-
-
 </style>
+
