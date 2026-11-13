@@ -2039,4 +2039,47 @@ function cancelarCierre() {
     }
 }
 
+
+.acciones-evento {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.acciones-evento button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.btn-editar {
+    background: #00AEEF;
+    color: white;
+}
+
+.btn-editar:hover {
+    background: #008FCC;
+    transform: translateY(-2px);
+}
+
+.btn-eliminar {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-eliminar:hover {
+    background: #b02a37;
+    transform: translateY(-2px);
+}
+
+.acciones-evento button:active {
+    transform: scale(0.97);
+}
+
+
 </style>
