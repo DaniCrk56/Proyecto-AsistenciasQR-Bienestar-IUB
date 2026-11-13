@@ -1018,6 +1018,118 @@ function cancelarCierre() {
         </div>
     </div>
 {/if}
+
+{#if mostrarModalEdicion}
+    <div class="modal-fondo">
+        <div class="modal-contenido modal-edicion">
+            <h2>Editar evento</h2>
+            <p>Modifica la información de la actividad.</p>
+
+            <form onsubmit={(e) => {
+                e.preventDefault();
+                guardarEdicion();
+            }}>
+                <label>Nombre del evento</label>
+                <input
+                    type="text"
+                    bind:value={actividadEditada.nombre}
+                    required
+                />
+
+                <label>Descripción</label>
+                <textarea
+                    bind:value={actividadEditada.descripcion}
+                    rows="3"
+                ></textarea>
+
+                <label>Fecha</label>
+                <input
+                    type="date"
+                    bind:value={actividadEditada.fecha}
+                    required
+                />
+
+                <div class="campos-horario">
+                    <div>
+                        <label>Hora de inicio</label>
+                        <input
+                            type="time"
+                            bind:value={actividadEditada.hora_inicio}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label>Hora de finalización</label>
+                        <input
+                            type="time"
+                            bind:value={actividadEditada.hora_fin}
+                            required
+                        />
+                    </div>
+                </div>
+
+                <label>Cupo máximo</label>
+                <input
+                    type="number"
+                    min="1"
+                    bind:value={actividadEditada.cupo_maximo}
+                    required
+                />
+
+                <label>Lugar</label>
+                <select bind:value={actividadEditada.id_lugar} required>
+                    <option value="">Selecciona un lugar</option>
+                    {#each lugares as lugar}
+                        <option value={lugar.id}>{lugar.nombre}</option>
+                    {/each}
+                </select>
+
+                <label>Categoría</label>
+                <select bind:value={actividadEditada.id_categoria} required>
+                    <option value="">Selecciona una categoría</option>
+                    {#each categorias as categoria}
+                        <option value={categoria.id}>{categoria.nombre}</option>
+                    {/each}
+                </select>
+
+                <label>Estado de la actividad</label>
+                <select bind:value={actividadEditada.id_estado_actividad} required>
+                    <option value="">Selecciona un estado</option>
+                    {#each estados as estado}
+                        <option value={estado.id}>{estado.nombre}</option>
+                    {/each}
+                </select>
+
+                {#if mensajeEdicion}
+                    <p class:error-mensaje={errorEdicion}>
+                        {mensajeEdicion}
+                    </p>
+                {/if}
+
+                <div class="botones-modal">
+                    <button
+                        type="button"
+                        class="btn-cancelar"
+                        onclick={cerrarEdicion}
+                        disabled={guardandoEdicion}
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn-guardar"
+                        disabled={guardandoEdicion}
+                    >
+                        {guardandoEdicion ? 'Guardando...' : 'Guardar cambios'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
 </div>
 
 <style>
@@ -1823,4 +1935,108 @@ function cancelarCierre() {
         transform: translateY(0) scale(1);
     }
 }
+
+
+.modal-fondo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-contenido {
+    background: white;
+    width: 100%;
+    max-width: 650px;
+    padding: 30px;
+    border-radius: 15px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-contenido h2 {
+    margin-bottom: 8px;
+}
+
+.modal-contenido form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-contenido label {
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.modal-contenido input,
+.modal-contenido textarea,
+.modal-contenido select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.campos-horario {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.campos-horario div {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.botones-modal {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.botones-modal button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-cancelar {
+    background: #e5e7eb;
+    color: #333;
+}
+
+.btn-guardar {
+    background: #00AEEF;
+    color: white;
+}
+
+.botones-modal button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .campos-horario {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-contenido {
+        padding: 20px;
+    }
+}
+
 </style>
