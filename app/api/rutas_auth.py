@@ -1,7 +1,7 @@
 
 from datetime import datetime, timedelta
 from typing import Optional
-
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -16,7 +16,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 router = APIRouter(prefix="/auth", tags=["Autenticación y JWT"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 class DatosLogin(BaseModel):
@@ -144,6 +144,33 @@ def login(datos: DatosLogin):
             "programa": usuario["programa"],
             "id_rol": usuario["id_rol"]
         }
+    }
+    @router.post("/token")
+def login_swagger(datos: OAuth2PasswordRequestForm = Depends()):
+
+    repo = UsuarioRepository()
+    usuario = repo.obtener_por_correo(datos.username)
+
+    if not usuario:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
+
+    password_guardado = usuario.get("password_hash")
+
+    if not password_guardado or datos.password != password_guardado:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+
+    token = crear_token_acceso(
+        data={
+            "sub": usuario["correo_institucional"],
+            "usuario_id": usuario["id"],
+            "id_rol": usuario["id_rol"]
+        },
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
     }
 
 
