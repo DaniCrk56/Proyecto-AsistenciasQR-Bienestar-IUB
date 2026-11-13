@@ -40,6 +40,18 @@ let mostrarConfirmacion = false;
     let mensajeOpciones = '';
 
     let guardandoActividad = false;
+
+let mostrarModalEdicion = false;
+let eventoEditando = null;
+let guardandoEdicion = false;
+let mensajeEdicion = '';
+let errorEdicion = false;
+
+let mostrarConfirmacionEliminar = false;
+let eventoEliminar = null;
+let eliminandoEvento = false;
+let mensajeEliminar = '';
+
     let mensajeActividad = '';
     let errorActividad = false;
 
@@ -54,6 +66,19 @@ let mostrarConfirmacion = false;
         id_categoria: '',
         id_estado_actividad: ''
     };
+
+let actividadEditada = {
+    nombre: '',
+    descripcion: '',
+    fecha: '',
+    hora_inicio: '',
+    hora_fin: '',
+    cupo_maximo: '',
+    id_lugar: '',
+    id_categoria: '',
+    id_estado_actividad: '',
+    id_responsable: null
+};
 
     const URL_BASE = 'https://proyecto-asistenciasqr-bienestar-iub.onrender.com';
 
@@ -131,6 +156,134 @@ async function cargarEstadisticas() {
             cargarEventos();
         }
     }
+
+function abrirEdicion(evento) {
+    eventoEditando = evento;
+
+    actividadEditada = {
+        nombre: evento.nombre || '',
+        descripcion: evento.descripcion || '',
+        fecha: evento.fecha ? String(evento.fecha).substring(0, 10) : '',
+        hora_inicio: evento.hora_inicio ? String(evento.hora_inicio).substring(0, 5) : '',
+        hora_fin: evento.hora_fin ? String(evento.hora_fin).substring(0, 5) : '',
+        cupo_maximo: evento.cupo_maximo,
+        id_lugar: evento.id_lugar,
+        id_categoria: evento.id_categoria,
+        id_estado_actividad: evento.id_estado_actividad,
+        id_responsable: evento.id_responsable ?? null
+    };
+
+    mensajeEdicion = '';
+    errorEdicion = false;
+    mostrarModalEdicion = true;
+
+    if (lugares.length === 0 || categorias.length === 0 || estados.length === 0) {
+        cargarOpciones();
+    }
+}
+
+function cerrarEdicion() {
+    mostrarModalEdicion = false;
+    eventoEditando = null;
+    mensajeEdicion = '';
+}
+
+async function guardarEdicion() {
+    if (!eventoEditando) return;
+
+    guardandoEdicion = true;
+    mensajeEdicion = '';
+    errorEdicion = false;
+
+    const token = localStorage.getItem('token');
+
+    const datos = {
+        nombre: actividadEditada.nombre,
+        descripcion: actividadEditada.descripcion,
+        fecha: actividadEditada.fecha,
+        hora_inicio: actividadEditada.hora_inicio,
+        hora_fin: actividadEditada.hora_fin,
+        cupo_maximo: Number(actividadEditada.cupo_maximo),
+        id_lugar: Number(actividadEditada.id_lugar),
+        id_categoria: Number(actividadEditada.id_categoria),
+        id_estado_actividad: Number(actividadEditada.id_estado_actividad),
+        id_responsable: actividadEditada.id_responsable
+    };
+
+    try {
+        const respuesta = await fetch(`${URL_BASE}/actividades/${eventoEditando.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(datos)
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(resultado.detail || 'No se pudo actualizar el evento');
+        }
+
+        mensajeEdicion = 'Evento actualizado correctamente';
+        await cargarEventos();
+
+        setTimeout(() => {
+            cerrarEdicion();
+        }, 1000);
+
+    } catch (error) {
+        errorEdicion = true;
+        mensajeEdicion = error.message;
+    } finally {
+        guardandoEdicion = false;
+    }
+}
+
+function confirmarEliminar(evento) {
+    eventoEliminar = evento;
+    mensajeEliminar = '';
+    mostrarConfirmacionEliminar = true;
+}
+
+function cancelarEliminar() {
+    mostrarConfirmacionEliminar = false;
+    eventoEliminar = null;
+    mensajeEliminar = '';
+}
+
+async function eliminarEvento() {
+    if (!eventoEliminar) return;
+
+    eliminandoEvento = true;
+    mensajeEliminar = '';
+
+    const token = localStorage.getItem('token');
+
+    try {
+        const respuesta = await fetch(`${URL_BASE}/actividades/${eventoEliminar.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(resultado.detail || 'No se pudo eliminar el evento');
+        }
+
+        await cargarEventos();
+        cancelarEliminar();
+
+    } catch (error) {
+        mensajeEliminar = error.message;
+    } finally {
+        eliminandoEvento = false;
+    }
+}
 
 function cerrarSesion() {
     mostrarConfirmacion = false;
@@ -644,7 +797,21 @@ function cancelarCierre() {
                                         Estado:
                                         {evento.estado ? 'Activo' : 'Inactivo'}
                                     </p>
+<div class="acciones-evento">
+    <button
+        class="btn-editar"
+        onclick={() => abrirEdicion(evento)}
+    >
+        Editar
+    </button>
 
+    <button
+        class="btn-eliminar"
+        onclick={() => confirmarEliminar(evento)}
+    >
+        Eliminar
+    </button>
+</div>
                                 </div>
                             </article>
                         {/each}
