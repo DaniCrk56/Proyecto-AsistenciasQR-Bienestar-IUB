@@ -126,45 +126,46 @@ class AsistenciaRepository:
             cursor.close()
             conn.close()
 
-def obtener_por_evento(self, id_evento):
 
-    conn = self.db.get_connection()
+    def obtener_por_evento(self, id_evento):
 
-    if not conn:
-        return []
+        conn = self.db.get_connection()
 
-    cursor = conn.cursor()
+        if not conn:
+            return []
 
-    try:
-        cursor.execute("""
-            SELECT
-                a.id,
-                u.nombres,
-                u.apellidos,
-                u.numero_documento,
-                act.nombre AS evento,
-                a.fecha_asistencia,
-                a.metodo
-            FROM asistencia a
-            INNER JOIN inscripcion i
-                ON a.id_inscripcion = i.id
-            INNER JOIN usuario u
-                ON i.id_usuario = u.id
-            INNER JOIN actividad act
-                ON i.id_actividad = act.id
-            WHERE i.id_actividad = %s
-            AND a.estado = TRUE
-            ORDER BY a.fecha_asistencia DESC;
-        """, (id_evento,))
+        cursor = conn.cursor()
 
-        filas = cursor.fetchall()
+        try:
+            cursor.execute("""
+                SELECT
+                    a.id,
+                    u.nombres,
+                    u.apellidos,
+                    u.numero_documento,
+                    act.nombre AS evento,
+                    a.fecha_asistencia,
+                    a.metodo
+                FROM asistencia a
+                INNER JOIN inscripcion i
+                    ON a.id_inscripcion = i.id
+                INNER JOIN usuario u
+                    ON i.id_usuario = u.id
+                INNER JOIN actividad act
+                    ON i.id_actividad = act.id
+                WHERE i.id_actividad = %s
+                AND a.estado = TRUE
+                ORDER BY a.fecha_asistencia DESC;
+            """, (id_evento,))
 
-        if filas and not isinstance(filas[0], dict):
-            columnas = [columna[0] for columna in cursor.description]
-            filas = [dict(zip(columnas, fila)) for fila in filas]
+            filas = cursor.fetchall()
 
-        return filas
+            if filas and not isinstance(filas[0], dict):
+                columnas = [columna[0] for columna in cursor.description]
+                filas = [dict(zip(columnas, fila)) for fila in filas]
 
-    finally:
-        cursor.close()
-        conn.close()
+            return filas
+
+        finally:
+            cursor.close()
+            conn.close()
