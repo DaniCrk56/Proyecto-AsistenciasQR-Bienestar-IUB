@@ -776,12 +776,14 @@
         letter-spacing: 2px;
     }
 
-    .navegacion {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 35px;
-    }
+   
+.navegacion {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 35px;
+}
+
 
     .enlace {
         color: #e2e7f4;
@@ -1614,37 +1616,54 @@
             margin-left: auto;
         }
 
-        .navegacion {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            width: 100%;
-            background: #142044;
-            padding: 10px 5% 18px;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 5px;
-            z-index: 100;
-            box-shadow: 0 10px 15px #0003;
-        }
 
-        .navegacion.abierto {
-            display: flex;
-        }
+.navegacion {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #142044;
+    padding: 10px 5% 18px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    z-index: 100;
 
-        .enlace {
-            width: 100%;
-            padding: 13px 10px;
-            font-size: 14px;
-            gap: 12px;
-            border-radius: 8px;
-        }
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-12px);
 
-        .enlace span {
-            font-size: 19px;
-        }
+    box-shadow: 0 10px 20px rgba(0,0,0,.2);
+
+    transition:
+        opacity .3s ease,
+        transform .35s ease,
+        visibility .3s ease;
+}
+
+.navegacion.abierto {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.enlace {
+    width: 100%;
+    padding: 14px 12px;
+    font-size: 14px;
+    gap: 12px;
+    border-radius: 9px;
+    transition: background .25s ease, color .25s ease;
+}
+
+.enlace:hover,
+.enlace.activo {
+    background: rgba(245, 202, 36, .10);
+    color: #f5ca24;
+}
+
 
         .presentacion {
             width: 94%;
