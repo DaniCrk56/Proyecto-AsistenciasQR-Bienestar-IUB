@@ -138,3 +138,34 @@ class ActividadRepository:
         conn.close()
 
         return exito
+
+      
+    def obtener_estadisticas(self):
+        conn = self.db.get_connection()
+
+        if not conn:
+            raise Exception("No se pudo conectar con la base de datos")
+
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                SELECT
+                    (SELECT COUNT(*) FROM actividad) AS total_eventos,
+                    (SELECT COUNT(*) FROM actividad WHERE estado = TRUE) AS eventos_activos,
+                    (SELECT COUNT(*) FROM inscripcion WHERE estado = TRUE) AS estudiantes_inscritos,
+                    (SELECT COUNT(*) FROM asistencia WHERE estado = TRUE) AS total_asistencias;
+            """)
+
+            resultado = cursor.fetchone()
+
+            if isinstance(resultado, dict):
+                return resultado
+
+            columnas = [columna[0] for columna in cursor.description]
+            return dict(zip(columnas, resultado))
+
+        finally:
+            cursor.close()
+            conn.close()
+
