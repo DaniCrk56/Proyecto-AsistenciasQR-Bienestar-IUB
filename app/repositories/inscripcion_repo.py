@@ -47,40 +47,48 @@ class InscripcionRepository:
 
         return fila
 
-    def obtener_por_estudiante(self, usuario_id):
-        conn = self.db.get_connection()
 
-        if not conn:
-            return []
+def obtener_por_estudiante(self, usuario_id):
+    conn = self.db.get_connection()
 
-        cursor = conn.cursor()
+    if not conn:
+        return []
 
-        cursor.execute("""
-            SELECT
-                i.id,
-                i.id_usuario,
-                i.id_actividad,
-                i.codigo_qr,
-                i.estado,
-                i.creado,
-                a.nombre AS nombre_evento,
-                a.descripcion,
-                a.fecha,
-                a.hora_inicio,
-                a.hora_fin
-            FROM inscripcion i
-            INNER JOIN actividad a
-                ON i.id_actividad = a.id
-            WHERE i.id_usuario = %s
-            AND i.estado = TRUE
-            AND a.estado = TRUE
-            ORDER BY a.fecha ASC, a.hora_inicio ASC;
-        """, (usuario_id,))
+    cursor = conn.cursor()
 
-        filas = cursor.fetchall()
-        conn.close()
+    cursor.execute("""
+        SELECT
+            i.id,
+            i.id_usuario,
+            i.id_actividad,
+            i.codigo_qr,
+            i.estado,
+            i.creado,
+            a.nombre AS nombre_evento,
+            a.descripcion,
+            a.fecha,
+            a.hora_inicio,
+            a.hora_fin
+        FROM inscripcion i
+        INNER JOIN actividad a
+            ON i.id_actividad = a.id
+        WHERE i.id_usuario = %s
+        AND i.estado = TRUE
+        AND a.estado = TRUE
+        AND NOT EXISTS (
+            SELECT 1
+            FROM asistencia asi
+            WHERE asi.id_inscripcion = i.id
+            AND asi.estado = TRUE
+        )
+        ORDER BY a.fecha ASC, a.hora_inicio ASC;
+    """, (usuario_id,))
 
-        return filas
+    filas = cursor.fetchall()
+    conn.close()
+
+    return filas
+
 
     def crear(self, inscripcion):
         conn = self.db.get_connection()
