@@ -17,6 +17,7 @@ let cargandoEstadisticas = false;
 let mensajeEstadisticas = '';
 
     let asistencias = [];
+let mostrarConfirmacion = false;
     let cargandoAsistencias = false;
     let mensajeAsistencias = '';
     let idEventoSeleccionado = '';
@@ -131,10 +132,16 @@ async function cargarEstadisticas() {
         }
     }
 
-    function cerrarSesion() {
-        localStorage.removeItem('usuario');
-        window.location.href = '/';
-    }
+function cerrarSesion() {
+    mostrarConfirmacion = false;
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('token');
+    window.location.href = '/';
+}
+
+function cancelarCierre() {
+    mostrarConfirmacion = false;
+}
 
     async function cargarOpciones() {
         cargandoOpciones = true;
@@ -693,10 +700,10 @@ async function cargarEstadisticas() {
 
                 </div>
 
-                <button class="boton-cerrar-sesion" onclick={cerrarSesion}>
-                    <span>↪</span>
-                    Cerrar sesión
-                </button>
+           <button class="boton-cerrar-sesion" onclick={() => mostrarConfirmacion = true}>
+    <span>↪</span>
+    Cerrar sesión
+</button>
 
             </section>
 
@@ -820,6 +827,30 @@ async function cargarEstadisticas() {
         {/if}
 
     </main>
+{#if mostrarConfirmacion}
+    <div class="modal-fondo">
+        <div class="modal-confirmacion">
+            <div class="modal-icono">↪</div>
+
+            <h2>¿Deseas cerrar sesión?</h2>
+
+            <p>
+                Tu sesión se cerrará y tendrás que iniciar sesión nuevamente
+                para acceder al sistema.
+            </p>
+
+            <div class="modal-botones">
+                <button class="boton-cancelar" onclick={cancelarCierre}>
+                    Cancelar
+                </button>
+
+                <button class="boton-confirmar" onclick={cerrarSesion}>
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
 </div>
 
 <style>
@@ -1527,4 +1558,102 @@ async function cargarEstadisticas() {
         font-size: 10px;
         font-weight: 1000;
     }
+
+.modal-fondo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 20, 45, 0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.modal-confirmacion {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-radius: 18px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    animation: aparecerModal 0.25s ease;
+}
+
+.modal-icono {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 15px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #e7f5fc;
+    color: #0785b6;
+    font-size: 28px;
+}
+
+.modal-confirmacion h2 {
+    color: #18233f;
+    font-size: 21px;
+    font-weight: 1000;
+    margin: 10px 0;
+}
+
+.modal-confirmacion p {
+    color: #8995a9;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.modal-botones {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.modal-botones button {
+    flex: 1;
+    padding: 13px 10px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.boton-cancelar {
+    background: #edf1f7;
+    color: #596781;
+}
+
+.boton-cancelar:hover {
+    background: #dfe5ef;
+}
+
+.boton-confirmar {
+    background: #0785b6;
+    color: white;
+}
+
+.boton-confirmar:hover {
+    background: #056b91;
+}
+
+@keyframes aparecerModal {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 </style>
