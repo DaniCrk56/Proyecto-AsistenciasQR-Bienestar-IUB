@@ -145,7 +145,9 @@ def login(datos: DatosLogin):
             "id_rol": usuario["id_rol"]
         }
     }
-    @router.post("/token")
+
+
+@router.post("/token")
 def login_swagger(datos: OAuth2PasswordRequestForm = Depends()):
 
     repo = UsuarioRepository()
@@ -172,6 +174,7 @@ def login_swagger(datos: OAuth2PasswordRequestForm = Depends()):
         "access_token": token,
         "token_type": "bearer"
     }
+
 
 
 def validar_token(token: str = Depends(oauth2_scheme)):
