@@ -12,17 +12,59 @@
     };
 
     let menuAbierto = false;
-let mostrarConfirmacion = false;
-function cerrarSesion() {
-    mostrarConfirmacion = false;
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('token');
-    window.location.href = '/';
-}
+    let mostrarConfirmacion = false;
 
-function cancelarCierre() {
-    mostrarConfirmacion = false;
-}
+    let eventos = [];
+    let cargandoEventos = true;
+
+    $: eventosPendientes = eventos;
+
+    function cerrarSesion() {
+        mostrarConfirmacion = false;
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        window.location.href = '/';
+    }
+
+    function cancelarCierre() {
+        mostrarConfirmacion = false;
+    }
+
+    async function cargarEventos(usuarioId) {
+        try {
+            const token = localStorage.getItem('token');
+
+            const respuesta = await fetch(
+                `https://proyecto-asistenciasqr-bienestar-iub.onrender.com/inscripciones/estudiante/${usuarioId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!respuesta.ok) {
+                throw new Error('No se pudieron cargar las inscripciones');
+            }
+
+            const datos = await respuesta.json();
+
+            eventos = datos.map(evento => ({
+                id: evento.id,
+                nombre: evento.nombre_evento,
+                categoria: 'Actividad universitaria',
+                fecha: evento.fecha,
+                hora: evento.hora_inicio,
+                lugar: evento.lugar || 'Por confirmar'
+            }));
+
+        } catch (error) {
+            console.error('Error cargando eventos pendientes:', error);
+            eventos = [];
+        } finally {
+            cargandoEventos = false;
+        }
+    }
 
     onMount(() => {
         const usuarioGuardado = localStorage.getItem('usuario');
@@ -39,20 +81,19 @@ function cancelarCierre() {
                     programa: usuario.programa || 'No registrado',
                     codigo: 'No registrado'
                 };
+
+                cargarEventos(usuario.id);
+
             } catch (error) {
                 estudiante.nombre = 'Error al cargar los datos';
+                cargandoEventos = false;
                 console.error('Error leyendo el usuario:', error);
             }
         } else {
             estudiante.nombre = 'No se encontró el usuario';
+            cargandoEventos = false;
         }
     });
-
-   let eventos = [];
-
-    $: eventosPendientes = eventos.filter(
-        evento => evento.estado === 'pendiente'
-    );
 </script>
 
 
