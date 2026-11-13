@@ -1130,6 +1130,46 @@ function cancelarCierre() {
     </div>
 {/if}
 
+{#if mostrarConfirmacionEliminar}
+    <div class="modal-fondo">
+        <div class="modal-contenido modal-confirmacion">
+            <h2>Eliminar evento</h2>
+
+            <p>
+                ¿Estás seguro de que deseas eliminar
+                <strong>{eventoEliminar?.nombre}</strong>?
+            </p>
+
+            <p>Esta acción desactivará el evento y dejará de aparecer en la lista.</p>
+
+            {#if mensajeEliminar}
+                <p class="error-mensaje">{mensajeEliminar}</p>
+            {/if}
+
+            <div class="botones-modal">
+                <button
+                    type="button"
+                    class="btn-cancelar"
+                    onclick={cancelarEliminar}
+                    disabled={eliminandoEvento}
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="btn-eliminar"
+                    onclick={eliminarEvento}
+                    disabled={eliminandoEvento}
+                >
+                    {eliminandoEvento ? 'Eliminando...' : 'Sí, eliminar'}
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+
 </div>
 
 <style>
@@ -2079,6 +2119,25 @@ function cancelarCierre() {
 
 .acciones-evento button:active {
     transform: scale(0.97);
+}
+
+
+.modal-confirmacion {
+    max-width: 450px;
+}
+
+.modal-confirmacion p {
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+.modal-confirmacion .btn-eliminar {
+    background: #dc3545;
+    color: white;
+}
+
+.modal-confirmacion .btn-eliminar:hover {
+    background: #b02a37;
 }
 
 
