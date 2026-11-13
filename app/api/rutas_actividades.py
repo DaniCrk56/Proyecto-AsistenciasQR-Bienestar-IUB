@@ -10,6 +10,18 @@ repo = ActividadRepository()
 def listar_actividades():
     return repo.obtener_todos()
 
+@router.get("/estadisticas/panel")
+def obtener_estadisticas(usuario=Depends(validar_administrador)):
+    try:
+        return repo.obtener_estadisticas()
+
+    except Exception as e:
+        print("Error al obtener estadísticas:", e)
+        raise HTTPException(
+            status_code=500,
+            detail="No se pudieron obtener las estadísticas"
+        )
+
 @router.get("/{actividad_id}")
 def obtener_actividad(actividad_id: int):
     actividad = repo.obtener_por_id(actividad_id)
