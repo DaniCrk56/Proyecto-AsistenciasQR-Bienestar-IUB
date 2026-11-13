@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from app.api.rutas_auth import validar_administrador
 from app.models.actividad import Actividad
 from app.repositories.actividad_repo import ActividadRepository
 
